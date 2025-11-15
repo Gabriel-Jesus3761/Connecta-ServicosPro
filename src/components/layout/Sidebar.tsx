@@ -1,0 +1,326 @@
+import { useState, useEffect } from 'react'
+import { NavLink } from 'react-router-dom'
+import {
+  LayoutDashboard,
+  Calendar,
+  Scissors,
+  Users,
+  LogOut,
+  Sparkles,
+  Menu,
+  X,
+  ChevronDown,
+  DollarSign,
+  UserCheck,
+  ShoppingBag,
+  ClipboardList
+} from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { cn } from '@/lib/utils'
+
+interface NavItem {
+  to?: string
+  icon: any
+  label: string
+  children?: NavItem[]
+}
+
+const navItems: NavItem[] = [
+  {
+    label: 'Painéis de gestão',
+    icon: LayoutDashboard,
+    children: [
+      { to: '/', icon: LayoutDashboard, label: 'Dashboard Geral' },
+      { to: '/dashboard/financeiro', icon: DollarSign, label: 'Financeiro' },
+      { to: '/dashboard/profissionais', icon: UserCheck, label: 'Profissionais' },
+      { to: '/dashboard/servicos', icon: ShoppingBag, label: 'Serviços' },
+      { to: '/dashboard/clientes', icon: Users, label: 'Clientes' },
+      { to: '/dashboard/agendamentos', icon: ClipboardList, label: 'Agendamentos' },
+    ]
+  },
+  { to: '/agendamentos', icon: Calendar, label: 'Agendamentos' },
+  { to: '/servicos', icon: Scissors, label: 'Serviços' },
+  { to: '/profissionais', icon: Users, label: 'Profissionais' },
+]
+
+interface SidebarProps {
+  isExpanded: boolean
+  setIsExpanded: (value: boolean) => void
+  isMobileOpen: boolean
+  setIsMobileOpen: (value: boolean) => void
+}
+
+export function Sidebar({ isExpanded, setIsExpanded, isMobileOpen, setIsMobileOpen }: SidebarProps) {
+  const [isHovered, setIsHovered] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [expandedMenus, setExpandedMenus] = useState<{ [key: string]: boolean }>({
+    'Painéis de gestão': true // Dashboard submenu expanded by default
+  })
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  const shouldExpand = !isMobile && (isExpanded || isHovered)
+
+  // Close mobile menu when clicking on a link
+  const handleLinkClick = () => {
+    if (isMobile) {
+      setIsMobileOpen(false)
+    }
+  }
+
+  // Toggle submenu expansion
+  const toggleSubmenu = (label: string) => {
+    setExpandedMenus(prev => ({
+      ...prev,
+      [label]: !prev[label]
+    }))
+  }
+
+  return (
+    <>
+      {/* Mobile Overlay */}
+      <AnimatePresence>
+        {isMobile && isMobileOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMobileOpen(false)}
+            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Sidebar */}
+      <motion.aside
+        initial={isMobile ? { x: -280 } : { x: -280 }}
+        animate={{
+          x: isMobile ? (isMobileOpen ? 0 : -280) : 0,
+          width: isMobile ? 280 : shouldExpand ? 280 : 80
+        }}
+        transition={{ duration: 0.3, ease: 'easeInOut' }}
+        onMouseEnter={() => !isMobile && setIsHovered(true)}
+        onMouseLeave={() => !isMobile && setIsHovered(false)}
+        className="bg-gradient-to-b from-gray-900 to-black text-white h-screen fixed left-0 top-0 flex flex-col border-r border-gold/20 z-50"
+      >
+        {/* Header with Logo and Menu Button */}
+        <div className="p-6 border-b border-gold/20">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className="w-12 h-12 bg-gold rounded-lg flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-7 h-7 text-white" />
+              </div>
+              <AnimatePresence>
+                {(shouldExpand || isMobileOpen) && (
+                  <motion.div
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: 'auto' }}
+                    exit={{ opacity: 0, width: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <h1 className="text-xl font-bold text-gold whitespace-nowrap">BarberPro</h1>
+                    <p className="text-xs text-gray-400 whitespace-nowrap">Gestão Profissional</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Hamburger Button - Desktop Only */}
+            {!isMobile && shouldExpand && (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="p-2 hover:bg-gold/10 rounded-lg transition-colors flex-shrink-0"
+              >
+                {isExpanded ? (
+                  <X className="w-5 h-5 text-gold" />
+                ) : (
+                  <Menu className="w-5 h-5 text-gold" />
+                )}
+              </motion.button>
+            )}
+
+            {/* Close Button - Mobile Only */}
+            {isMobile && isMobileOpen && (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                onClick={() => setIsMobileOpen(false)}
+                className="p-2 hover:bg-gold/10 rounded-lg transition-colors flex-shrink-0"
+              >
+                <X className="w-5 h-5 text-gold" />
+              </motion.button>
+            )}
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 px-4 py-6 overflow-y-auto">
+          <ul className="space-y-2">
+            {navItems.map((item) => (
+              <li key={item.to || item.label}>
+                {/* Item with children (submenu) */}
+                {item.children ? (
+                  <div>
+                    <button
+                      onClick={() => toggleSubmenu(item.label)}
+                      className={cn(
+                        "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+                        "hover:bg-gold/10 text-gray-300 hover:text-white",
+                        !isMobile && !shouldExpand && "justify-center"
+                      )}
+                      title={!isMobile && !shouldExpand ? item.label : undefined}
+                    >
+                      <item.icon className="w-5 h-5 flex-shrink-0" />
+                      <AnimatePresence>
+                        {(shouldExpand || isMobileOpen) && (
+                          <motion.span
+                            initial={{ opacity: 0, width: 0 }}
+                            animate={{ opacity: 1, width: 'auto' }}
+                            exit={{ opacity: 0, width: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="font-medium whitespace-nowrap overflow-hidden flex-1 text-left"
+                          >
+                            {item.label}
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                      <AnimatePresence>
+                        {(shouldExpand || isMobileOpen) && (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1, rotate: expandedMenus[item.label] ? 0 : -90 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <ChevronDown className="w-4 h-4 flex-shrink-0" />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </button>
+
+                    {/* Submenu items */}
+                    <AnimatePresence>
+                      {expandedMenus[item.label] && (shouldExpand || isMobileOpen) && (
+                        <motion.ul
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="mt-1 space-y-1 overflow-hidden"
+                        >
+                          {item.children.map((child) => (
+                            <li key={child.to}>
+                              <NavLink
+                                to={child.to!}
+                                onClick={handleLinkClick}
+                                className={({ isActive }) =>
+                                  cn(
+                                    "flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg transition-all duration-200",
+                                    "hover:bg-gold/10 hover:translate-x-1",
+                                    isActive
+                                      ? "bg-gold text-white shadow-lg shadow-gold/20"
+                                      : "text-gray-400 hover:text-white"
+                                  )
+                                }
+                              >
+                                <child.icon className="w-4 h-4 flex-shrink-0" />
+                                <span className="font-medium text-sm whitespace-nowrap">
+                                  {child.label}
+                                </span>
+                              </NavLink>
+                            </li>
+                          ))}
+                        </motion.ul>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                ) : (
+                  /* Regular item without children */
+                  <NavLink
+                    to={item.to!}
+                    onClick={handleLinkClick}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+                        "hover:bg-gold/10 hover:translate-x-1",
+                        isActive
+                          ? "bg-gold text-white shadow-lg shadow-gold/20"
+                          : "text-gray-300 hover:text-white",
+                        !isMobile && !shouldExpand && "justify-center"
+                      )
+                    }
+                    title={!isMobile && !shouldExpand ? item.label : undefined}
+                  >
+                    <item.icon className="w-5 h-5 flex-shrink-0" />
+                    <AnimatePresence>
+                      {(shouldExpand || isMobileOpen) && (
+                        <motion.span
+                          initial={{ opacity: 0, width: 0 }}
+                          animate={{ opacity: 1, width: 'auto' }}
+                          exit={{ opacity: 0, width: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="font-medium whitespace-nowrap overflow-hidden"
+                        >
+                          {item.label}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </NavLink>
+                )}
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        {/* User Profile */}
+        <div className="p-4 border-t border-gold/20">
+          <div className={cn(
+            "flex items-center gap-3 px-4 py-3 rounded-lg bg-gray-800/50",
+            !isMobile && !shouldExpand && "justify-center px-2"
+          )}>
+            <div className="w-10 h-10 bg-gold rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+              G
+            </div>
+            <AnimatePresence>
+              {(shouldExpand || isMobileOpen) && (
+                <motion.div
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: 'auto' }}
+                  exit={{ opacity: 0, width: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex-1 overflow-hidden"
+                >
+                  <p className="text-sm font-medium text-white whitespace-nowrap">Gabriel Santos</p>
+                  <p className="text-xs text-gray-400 whitespace-nowrap">Administrador</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            {(shouldExpand || isMobileOpen) && (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-gray-400 hover:text-gold transition-colors flex-shrink-0"
+                title="Sair"
+              >
+                <LogOut className="w-5 h-5" />
+              </motion.button>
+            )}
+          </div>
+        </div>
+      </motion.aside>
+    </>
+  )
+}
