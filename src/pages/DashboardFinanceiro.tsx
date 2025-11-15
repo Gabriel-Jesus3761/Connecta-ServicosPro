@@ -1,196 +1,228 @@
-import { useState, useMemo } from 'react'
-import { motion } from 'framer-motion'
-import { useOutletContext } from 'react-router-dom'
-import { TrendingUp, TrendingDown, Wallet, CreditCard, AlertCircle, PieChart } from 'lucide-react'
-import { Header } from '@/components/layout/Header'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { DateRangePicker } from '@/components/DateRangePicker'
-import { mockAppointments, mockExpenses } from '@/data/mockData'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
+import { useOutletContext } from "react-router-dom";
+import {
+  TrendingUp,
+  TrendingDown,
+  Wallet,
+  CreditCard,
+  AlertCircle,
+  PieChart,
+} from "lucide-react";
+import { Header } from "@/components/layout/Header";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { DateRangePicker } from "@/components/DateRangePicker";
+import { mockAppointments, mockExpenses } from "@/data/mockData";
+import { formatCurrency, formatDate } from "@/lib/utils";
 
 const container = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1
-    }
-  }
-}
+      staggerChildren: 0.1,
+    },
+  },
+};
 
 const item = {
   hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-}
+  show: { opacity: 1, y: 0 },
+};
 
-type DateRange = { from?: Date; to?: Date }
+type DateRange = { from?: Date; to?: Date };
 
 export default function DashboardFinanceiro() {
-  const { setIsMobileMenuOpen } = useOutletContext<{ setIsMobileMenuOpen: (value: boolean) => void }>()
-  const today = new Date()
+  const { setIsMobileMenuOpen } = useOutletContext<{
+    setIsMobileMenuOpen: (value: boolean) => void;
+  }>();
+  const today = new Date();
 
   const [dateRange, setDateRange] = useState<DateRange>({
     from: new Date(today.getFullYear(), today.getMonth(), 1),
-    to: today
-  })
+    to: today,
+  });
 
   // Filtrar receitas (agendamentos concluídos) por período
   const periodRevenues = useMemo(() => {
-    if (!dateRange.from) return []
+    if (!dateRange.from) return [];
 
-    return mockAppointments.filter(apt => {
-      if (apt.status !== 'completed') return false
+    return mockAppointments.filter((apt) => {
+      if (apt.status !== "completed") return false;
 
-      const aptDate = new Date(apt.date)
-      aptDate.setHours(0, 0, 0, 0)
+      const aptDate = new Date(apt.date);
+      aptDate.setHours(0, 0, 0, 0);
 
-      const fromDate = new Date(dateRange.from!)
-      fromDate.setHours(0, 0, 0, 0)
+      const fromDate = new Date(dateRange.from!);
+      fromDate.setHours(0, 0, 0, 0);
 
       if (dateRange.to) {
-        const toDate = new Date(dateRange.to)
-        toDate.setHours(23, 59, 59, 999)
-        return aptDate >= fromDate && aptDate <= toDate
+        const toDate = new Date(dateRange.to);
+        toDate.setHours(23, 59, 59, 999);
+        return aptDate >= fromDate && aptDate <= toDate;
       }
 
-      return aptDate.toDateString() === fromDate.toDateString()
-    })
-  }, [dateRange])
+      return aptDate.toDateString() === fromDate.toDateString();
+    });
+  }, [dateRange]);
 
   // Filtrar despesas por período
   const periodExpenses = useMemo(() => {
-    if (!dateRange.from) return []
+    if (!dateRange.from) return [];
 
-    return mockExpenses.filter(exp => {
-      const expDate = new Date(exp.date)
-      expDate.setHours(0, 0, 0, 0)
+    return mockExpenses.filter((exp) => {
+      const expDate = new Date(exp.date);
+      expDate.setHours(0, 0, 0, 0);
 
-      const fromDate = new Date(dateRange.from!)
-      fromDate.setHours(0, 0, 0, 0)
+      const fromDate = new Date(dateRange.from!);
+      fromDate.setHours(0, 0, 0, 0);
 
       if (dateRange.to) {
-        const toDate = new Date(dateRange.to)
-        toDate.setHours(23, 59, 59, 999)
-        return expDate >= fromDate && expDate <= toDate
+        const toDate = new Date(dateRange.to);
+        toDate.setHours(23, 59, 59, 999);
+        return expDate >= fromDate && expDate <= toDate;
       }
 
-      return expDate.toDateString() === fromDate.toDateString()
-    })
-  }, [dateRange])
+      return expDate.toDateString() === fromDate.toDateString();
+    });
+  }, [dateRange]);
 
   // Estatísticas financeiras
   const financialStats = useMemo(() => {
-    const totalRevenue = periodRevenues.reduce((sum, apt) => sum + apt.price, 0)
-    const totalExpenses = periodExpenses.filter(exp => exp.isPaid).reduce((sum, exp) => sum + exp.amount, 0)
-    const pendingExpenses = periodExpenses.filter(exp => !exp.isPaid).reduce((sum, exp) => sum + exp.amount, 0)
-    const profit = totalRevenue - totalExpenses
+    const totalRevenue = periodRevenues.reduce(
+      (sum, apt) => sum + apt.price,
+      0
+    );
+    const totalExpenses = periodExpenses
+      .filter((exp) => exp.isPaid)
+      .reduce((sum, exp) => sum + exp.amount, 0);
+    const pendingExpenses = periodExpenses
+      .filter((exp) => !exp.isPaid)
+      .reduce((sum, exp) => sum + exp.amount, 0);
+    const profit = totalRevenue - totalExpenses;
 
     return {
       totalRevenue,
       totalExpenses,
       pendingExpenses,
       profit,
-      profitMargin: totalRevenue > 0 ? (profit / totalRevenue) * 100 : 0
-    }
-  }, [periodRevenues, periodExpenses])
+      profitMargin: totalRevenue > 0 ? (profit / totalRevenue) * 100 : 0,
+    };
+  }, [periodRevenues, periodExpenses]);
 
   // Despesas por categoria
   const expensesByCategory = useMemo(() => {
-    const categories = new Map<string, { category: string; total: number; count: number }>()
+    const categories = new Map<
+      string,
+      { category: string; total: number; count: number }
+    >();
 
-    periodExpenses.filter(exp => exp.isPaid).forEach(exp => {
-      const existing = categories.get(exp.category) || { category: exp.category, total: 0, count: 0 }
-      categories.set(exp.category, {
-        ...existing,
-        total: existing.total + exp.amount,
-        count: existing.count + 1
-      })
-    })
+    periodExpenses
+      .filter((exp) => exp.isPaid)
+      .forEach((exp) => {
+        const existing = categories.get(exp.category) || {
+          category: exp.category,
+          total: 0,
+          count: 0,
+        };
+        categories.set(exp.category, {
+          ...existing,
+          total: existing.total + exp.amount,
+          count: existing.count + 1,
+        });
+      });
 
-    return Array.from(categories.values()).sort((a, b) => b.total - a.total)
-  }, [periodExpenses])
+    return Array.from(categories.values()).sort((a, b) => b.total - a.total);
+  }, [periodExpenses]);
 
   // Receitas por método de pagamento
   const revenuesByPaymentMethod = useMemo(() => {
-    const methods = new Map<string, { method: string; total: number; count: number }>()
+    const methods = new Map<
+      string,
+      { method: string; total: number; count: number }
+    >();
 
-    periodRevenues.forEach(apt => {
-      if (!apt.paymentMethod) return
+    periodRevenues.forEach((apt) => {
+      if (!apt.paymentMethod) return;
 
-      const existing = methods.get(apt.paymentMethod) || { method: apt.paymentMethod, total: 0, count: 0 }
+      const existing = methods.get(apt.paymentMethod) || {
+        method: apt.paymentMethod,
+        total: 0,
+        count: 0,
+      };
       methods.set(apt.paymentMethod, {
         ...existing,
         total: existing.total + apt.price,
-        count: existing.count + 1
-      })
-    })
+        count: existing.count + 1,
+      });
+    });
 
-    return Array.from(methods.values()).sort((a, b) => b.total - a.total)
-  }, [periodRevenues])
+    return Array.from(methods.values()).sort((a, b) => b.total - a.total);
+  }, [periodRevenues]);
 
   // Últimas transações (mix de receitas e despesas)
   const recentTransactions = useMemo(() => {
-    const revenues = periodRevenues.slice(0, 5).map(apt => ({
+    const revenues = periodRevenues.slice(0, 5).map((apt) => ({
       id: apt.id,
-      type: 'revenue' as const,
+      type: "revenue" as const,
       description: `${apt.service} - ${apt.clientName}`,
       amount: apt.price,
       date: apt.date,
-      paymentMethod: apt.paymentMethod
-    }))
+      paymentMethod: apt.paymentMethod,
+    }));
 
-    const expenses = periodExpenses.slice(0, 5).map(exp => ({
+    const expenses = periodExpenses.slice(0, 5).map((exp) => ({
       id: exp.id,
-      type: 'expense' as const,
+      type: "expense" as const,
       description: exp.description,
       amount: exp.amount,
       date: exp.date,
       paymentMethod: exp.paymentMethod,
-      isPaid: exp.isPaid
-    }))
+      isPaid: exp.isPaid,
+    }));
 
     return [...revenues, ...expenses]
       .sort((a, b) => b.date.getTime() - a.date.getTime())
-      .slice(0, 10)
-  }, [periodRevenues, periodExpenses])
+      .slice(0, 10);
+  }, [periodRevenues, periodExpenses]);
 
   const getCategoryLabel = (category: string) => {
     const labels: { [key: string]: string } = {
-      rent: 'Aluguel',
-      utilities: 'Utilidades',
-      supplies: 'Suprimentos',
-      salaries: 'Salários',
-      marketing: 'Marketing',
-      maintenance: 'Manutenção',
-      other: 'Outros'
-    }
-    return labels[category] || category
-  }
+      rent: "Aluguel",
+      utilities: "Utilidades",
+      supplies: "Suprimentos",
+      salaries: "Salários",
+      marketing: "Marketing",
+      maintenance: "Manutenção",
+      other: "Outros",
+    };
+    return labels[category] || category;
+  };
 
   const getPaymentMethodLabel = (method: string) => {
     const labels: { [key: string]: string } = {
-      pix: 'PIX',
-      credit: 'Crédito',
-      debit: 'Débito',
-      cash: 'Dinheiro',
-      boleto: 'Boleto'
-    }
-    return labels[method] || method
-  }
+      pix: "PIX",
+      credit: "Crédito",
+      debit: "Débito",
+      cash: "Dinheiro",
+      boleto: "Boleto",
+    };
+    return labels[method] || method;
+  };
 
   const getCategoryColor = (category: string) => {
     const colors: { [key: string]: string } = {
-      rent: 'bg-red-500',
-      utilities: 'bg-blue-500',
-      supplies: 'bg-green-500',
-      salaries: 'bg-purple-500',
-      marketing: 'bg-yellow-500',
-      maintenance: 'bg-orange-500',
-      other: 'bg-gray-500'
-    }
-    return colors[category] || 'bg-gray-500'
-  }
+      rent: "bg-red-500",
+      utilities: "bg-blue-500",
+      supplies: "bg-green-500",
+      salaries: "bg-purple-500",
+      marketing: "bg-yellow-500",
+      maintenance: "bg-orange-500",
+      other: "bg-gray-500",
+    };
+    return colors[category] || "bg-gray-500";
+  };
 
   return (
     <div>
@@ -252,7 +284,8 @@ export default function DashboardFinanceiro() {
                       {formatCurrency(financialStats.totalExpenses)}
                     </h3>
                     <p className="text-xs text-gray-500">
-                      {periodExpenses.filter(e => e.isPaid).length} pagamentos realizados
+                      {periodExpenses.filter((e) => e.isPaid).length} pagamentos
+                      realizados
                     </p>
                   </div>
                   <div className="bg-red-500 p-3 rounded-lg">
@@ -264,27 +297,37 @@ export default function DashboardFinanceiro() {
           </motion.div>
 
           <motion.div variants={item}>
-            <Card className={`hover:shadow-lg transition-shadow duration-200 border-l-4 ${
-              financialStats.profit >= 0 ? 'border-l-gold' : 'border-l-orange-500'
-            }`}>
+            <Card
+              className={`hover:shadow-lg transition-shadow duration-200 border-l-4 ${
+                financialStats.profit >= 0
+                  ? "border-l-gold"
+                  : "border-l-orange-500"
+              }`}
+            >
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-600 mb-1">
                       Lucro Líquido
                     </p>
-                    <h3 className={`text-3xl font-bold mb-2 ${
-                      financialStats.profit >= 0 ? 'text-green-600' : 'text-red-600'
-                    }`}>
+                    <h3
+                      className={`text-3xl font-bold mb-2 ${
+                        financialStats.profit >= 0
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
                       {formatCurrency(financialStats.profit)}
                     </h3>
                     <p className="text-xs text-gray-500">
                       Margem: {financialStats.profitMargin.toFixed(1)}%
                     </p>
                   </div>
-                  <div className={`p-3 rounded-lg ${
-                    financialStats.profit >= 0 ? 'bg-gold' : 'bg-orange-500'
-                  }`}>
+                  <div
+                    className={`p-3 rounded-lg ${
+                      financialStats.profit >= 0 ? "bg-gold" : "bg-orange-500"
+                    }`}
+                  >
                     <Wallet className="w-6 h-6 text-white" />
                   </div>
                 </div>
@@ -304,7 +347,8 @@ export default function DashboardFinanceiro() {
                       {formatCurrency(financialStats.pendingExpenses)}
                     </h3>
                     <p className="text-xs text-gray-500">
-                      {periodExpenses.filter(e => !e.isPaid).length} pagamentos pendentes
+                      {periodExpenses.filter((e) => !e.isPaid).length}{" "}
+                      pagamentos pendentes
                     </p>
                   </div>
                   <div className="bg-yellow-500 p-3 rounded-lg">
@@ -333,15 +377,20 @@ export default function DashboardFinanceiro() {
               <CardContent className="p-6">
                 <div className="space-y-4">
                   {expensesByCategory.map((cat) => {
-                    const percentage = financialStats.totalExpenses > 0
-                      ? (cat.total / financialStats.totalExpenses) * 100
-                      : 0
+                    const percentage =
+                      financialStats.totalExpenses > 0
+                        ? (cat.total / financialStats.totalExpenses) * 100
+                        : 0;
 
                     return (
                       <div key={cat.category}>
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <div className={`w-3 h-3 rounded ${getCategoryColor(cat.category)}`} />
+                            <div
+                              className={`w-3 h-3 rounded ${getCategoryColor(
+                                cat.category
+                              )}`}
+                            />
                             <span className="text-sm font-medium text-gray-700">
                               {getCategoryLabel(cat.category)}
                             </span>
@@ -357,15 +406,18 @@ export default function DashboardFinanceiro() {
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div
-                            className={`h-2 rounded-full ${getCategoryColor(cat.category)}`}
+                            className={`h-2 rounded-full ${getCategoryColor(
+                              cat.category
+                            )}`}
                             style={{ width: `${percentage}%` }}
                           />
                         </div>
                         <p className="text-xs text-gray-500 mt-1">
-                          {cat.count} {cat.count === 1 ? 'transação' : 'transações'}
+                          {cat.count}{" "}
+                          {cat.count === 1 ? "transação" : "transações"}
                         </p>
                       </div>
-                    )
+                    );
                   })}
                   {expensesByCategory.length === 0 && (
                     <p className="text-center text-gray-500 text-sm py-4">
@@ -393,9 +445,10 @@ export default function DashboardFinanceiro() {
               <CardContent className="p-6">
                 <div className="space-y-4">
                   {revenuesByPaymentMethod.map((method) => {
-                    const percentage = financialStats.totalRevenue > 0
-                      ? (method.total / financialStats.totalRevenue) * 100
-                      : 0
+                    const percentage =
+                      financialStats.totalRevenue > 0
+                        ? (method.total / financialStats.totalRevenue) * 100
+                        : 0;
 
                     return (
                       <div key={method.method}>
@@ -419,10 +472,11 @@ export default function DashboardFinanceiro() {
                           />
                         </div>
                         <p className="text-xs text-gray-500 mt-1">
-                          {method.count} {method.count === 1 ? 'transação' : 'transações'}
+                          {method.count}{" "}
+                          {method.count === 1 ? "transação" : "transações"}
                         </p>
                       </div>
-                    )
+                    );
                   })}
                   {revenuesByPaymentMethod.length === 0 && (
                     <p className="text-center text-gray-500 text-sm py-4">
@@ -469,23 +523,36 @@ export default function DashboardFinanceiro() {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {recentTransactions.map((transaction) => (
-                      <tr key={`${transaction.type}-${transaction.id}`} className="hover:bg-gray-50">
+                      <tr
+                        key={`${transaction.type}-${transaction.id}`}
+                        className="hover:bg-gray-50"
+                      >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className="text-sm text-gray-900">
                             {formatDate(transaction.date)}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <Badge variant={transaction.type === 'revenue' ? 'default' : 'destructive'}>
-                            {transaction.type === 'revenue' ? 'Receita' : 'Despesa'}
+                          <Badge
+                            variant={
+                              transaction.type === "revenue"
+                                ? "default"
+                                : "destructive"
+                            }
+                          >
+                            {transaction.type === "revenue"
+                              ? "Receita"
+                              : "Despesa"}
                           </Badge>
                         </td>
                         <td className="px-6 py-4">
                           <span className="text-sm text-gray-900">
                             {transaction.description}
                           </span>
-                          {'isPaid' in transaction && !transaction.isPaid && (
-                            <Badge variant="warning" className="ml-2">Pendente</Badge>
+                          {"isPaid" in transaction && !transaction.isPaid && (
+                            <Badge variant="warning" className="ml-2">
+                              Pendente
+                            </Badge>
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -498,10 +565,15 @@ export default function DashboardFinanceiro() {
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`text-sm font-bold ${
-                            transaction.type === 'revenue' ? 'text-green-600' : 'text-red-600'
-                          }`}>
-                            {transaction.type === 'revenue' ? '+' : '-'} {formatCurrency(transaction.amount)}
+                          <span
+                            className={`text-sm font-bold ${
+                              transaction.type === "revenue"
+                                ? "text-green-600"
+                                : "text-red-600"
+                            }`}
+                          >
+                            {transaction.type === "revenue" ? "+" : "-"}{" "}
+                            {formatCurrency(transaction.amount)}
                           </span>
                         </td>
                       </tr>
@@ -514,7 +586,7 @@ export default function DashboardFinanceiro() {
         </motion.div>
 
         {/* Despesas Pendentes */}
-        {periodExpenses.filter(e => !e.isPaid).length > 0 && (
+        {periodExpenses.filter((e) => !e.isPaid).length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -548,33 +620,39 @@ export default function DashboardFinanceiro() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {periodExpenses.filter(e => !e.isPaid).map((expense) => (
-                        <tr key={expense.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm text-gray-900">
-                              {formatDate(expense.date)}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm text-gray-900">{expense.description}</span>
-                              {expense.recurring && (
-                                <Badge variant="outline" className="text-xs">Recorrente</Badge>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <Badge variant="outline">
-                              {getCategoryLabel(expense.category)}
-                            </Badge>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm font-bold text-gray-900">
-                              {formatCurrency(expense.amount)}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
+                      {periodExpenses
+                        .filter((e) => !e.isPaid)
+                        .map((expense) => (
+                          <tr key={expense.id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className="text-sm text-gray-900">
+                                {formatDate(expense.date)}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm text-gray-900">
+                                  {expense.description}
+                                </span>
+                                {expense.recurring && (
+                                  <Badge variant="outline" className="text-xs">
+                                    Recorrente
+                                  </Badge>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <Badge variant="outline">
+                                {getCategoryLabel(expense.category)}
+                              </Badge>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className="text-sm font-bold text-gray-900">
+                                {formatCurrency(expense.amount)}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
                     </tbody>
                   </table>
                 </div>
@@ -584,5 +662,5 @@ export default function DashboardFinanceiro() {
         )}
       </div>
     </div>
-  )
+  );
 }
