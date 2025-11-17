@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface NavItem {
   to?: string
@@ -51,6 +52,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isExpanded, setIsExpanded, isMobileOpen, setIsMobileOpen }: SidebarProps) {
+  const { user, logout } = useAuth()
   const [isHovered, setIsHovered] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [expandedMenus, setExpandedMenus] = useState<{ [key: string]: boolean }>({
@@ -112,11 +114,24 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobileOpen, setIsMobileOp
         className="bg-gradient-to-b from-gray-900 to-black text-white h-screen fixed left-0 top-0 flex flex-col border-r border-gold/20 z-50"
       >
         {/* Header with Logo and Menu Button */}
-        <div className="p-6 border-b border-gold/20">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-12 h-12 bg-gold rounded-lg flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-7 h-7 text-white" />
+        <div className={cn(
+          "p-6 border-b border-gold/20",
+          !isMobile && !shouldExpand && "flex justify-center"
+        )}>
+          <div className={cn(
+            "flex items-center justify-between gap-3",
+            !isMobile && !shouldExpand && "w-auto"
+          )}>
+            <div className={cn(
+              "flex items-center gap-3 overflow-hidden",
+              !isMobile && !shouldExpand && "w-auto"
+            )}>
+              <div className="w-12 h-12 bg-gold rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                <img
+                  src="/Projeto-barbearia/assets/images/Logo.png"
+                  alt="Logo BarberPro"
+                  className="w-full h-full object-cover scale-110"
+                />
               </div>
               <AnimatePresence>
                 {(shouldExpand || isMobileOpen) && (
@@ -291,7 +306,7 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobileOpen, setIsMobileOp
             !isMobile && !shouldExpand && "justify-center px-2"
           )}>
             <div className="w-10 h-10 bg-gold rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-              G
+              {user?.name?.charAt(0).toUpperCase() || 'U'}
             </div>
             <AnimatePresence>
               {(shouldExpand || isMobileOpen) && (
@@ -302,8 +317,10 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobileOpen, setIsMobileOp
                   transition={{ duration: 0.2 }}
                   className="flex-1 overflow-hidden"
                 >
-                  <p className="text-sm font-medium text-white whitespace-nowrap">Gabriel Santos</p>
-                  <p className="text-xs text-gray-400 whitespace-nowrap">Administrador</p>
+                  <p className="text-sm font-medium text-white whitespace-nowrap">{user?.name}</p>
+                  <p className="text-xs text-gray-400 whitespace-nowrap">
+                    {user?.role === 'owner' ? 'Proprietário' : 'Cliente'}
+                  </p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -312,6 +329,7 @@ export function Sidebar({ isExpanded, setIsExpanded, isMobileOpen, setIsMobileOp
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
+                onClick={logout}
                 className="text-gray-400 hover:text-gold transition-colors flex-shrink-0"
                 title="Sair"
               >
