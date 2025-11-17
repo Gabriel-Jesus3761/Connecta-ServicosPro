@@ -11,7 +11,8 @@
       "Bash(git push:*)",
       "Bash(code:*)",
       "Bash(findstr:*)",
-      "Bash(nul)"
+      "Bash(nul)",
+      "Bash(npx tsc --noEmit)"
     ],
     "deny": [],
     "ask": []

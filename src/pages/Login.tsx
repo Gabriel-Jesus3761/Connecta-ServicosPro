@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Scissors, Lock, Mail, Eye, EyeOff, User, Crown } from 'lucide-react'
+import { Lock, Mail, Eye, EyeOff, User, Crown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -96,29 +96,12 @@ export function Login() {
     },
   ]
 
-  // Cores dinâmicas baseadas no tipo de usuário selecionado
-  const themeColors = selectedRole === 'client'
-    ? {
-        primary: 'blue-600',
-        light: 'blue-50',
-        border: 'blue-500',
-        hover: 'blue-700',
-        ring: 'blue-500',
-      }
-    : {
-        primary: 'gold',
-        light: 'gold-light',
-        border: 'gold',
-        hover: 'gold-dark',
-        ring: 'gold',
-      }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30z' fill='%23D4AF37' fill-opacity='0.4'/%3E%3C/svg%3E")`,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30z' fill='%23D4AF37' fillOpacity='0.4'/%3E%3C/svg%3E")`,
           backgroundSize: '30px 30px'
         }}></div>
       </div>

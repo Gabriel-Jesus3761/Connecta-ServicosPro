@@ -6,7 +6,6 @@ import {
   Scissors,
   Users,
   LogOut,
-  Sparkles,
   Menu,
   X,
   ChevronDown,
