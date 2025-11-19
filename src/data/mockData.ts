@@ -1,4 +1,4 @@
-import { Appointment, Service, Professional, DashboardStats, PaymentMethod, Expense, ExpenseCategory } from '@/types'
+import { Appointment, Service, Professional, DashboardStats, PaymentMethod, Expense, ExpenseCategory, Business, CategoryInfo, BusinessHours } from '@/types'
 
 // Função auxiliar para gerar agendamentos
 const generateAppointments = (): Appointment[] => {
@@ -74,8 +74,12 @@ const generateAppointments = (): Appointment[] => {
 
       appointments.push({
         id: String(id++),
+        businessId: 'biz-1', // BarberPro Premium
+        clientId: String(Math.floor(Math.random() * 100) + 1),
         clientName: names[Math.floor(Math.random() * names.length)],
+        serviceId: String(Math.floor(Math.random() * 12) + 1),
         service: service.name,
+        professionalId: String(Math.floor(Math.random() * 6) + 1),
         professional: professionals[Math.floor(Math.random() * professionals.length)],
         date: new Date(d.getFullYear(), d.getMonth(), d.getDate(), hour, minute),
         time: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`,
@@ -93,8 +97,10 @@ const generateAppointments = (): Appointment[] => {
 export const mockAppointments: Appointment[] = generateAppointments()
 
 export const mockServices: Service[] = [
+  // BarberPro Premium (biz-1)
   {
     id: '1',
+    businessId: 'biz-1',
     name: 'Corte Masculino',
     description: 'Corte moderno e estiloso com acabamento premium',
     price: 35.00,
@@ -103,14 +109,7 @@ export const mockServices: Service[] = [
   },
   {
     id: '2',
-    name: 'Corte Feminino',
-    description: 'Corte personalizado com técnicas avançadas',
-    price: 50.00,
-    duration: 45,
-    category: 'hair',
-  },
-  {
-    id: '3',
+    businessId: 'biz-1',
     name: 'Barba Completa',
     description: 'Design de barba com navalha e toalha quente',
     price: 25.00,
@@ -118,15 +117,27 @@ export const mockServices: Service[] = [
     category: 'beard',
   },
   {
-    id: '4',
+    id: '3',
+    businessId: 'biz-1',
     name: 'Corte + Barba',
     description: 'Combo completo de corte e design de barba',
     price: 55.00,
     duration: 45,
     category: 'hair',
   },
+  // Estilo & Charme (biz-4)
+  {
+    id: '4',
+    businessId: 'biz-4',
+    name: 'Corte Feminino',
+    description: 'Corte personalizado com técnicas avançadas',
+    price: 50.00,
+    duration: 45,
+    category: 'hair',
+  },
   {
     id: '5',
+    businessId: 'biz-4',
     name: 'Coloração',
     description: 'Coloração profissional com produtos de alta qualidade',
     price: 80.00,
@@ -135,6 +146,7 @@ export const mockServices: Service[] = [
   },
   {
     id: '6',
+    businessId: 'biz-4',
     name: 'Luzes',
     description: 'Mechas e luzes com técnicas personalizadas',
     price: 150.00,
@@ -143,6 +155,7 @@ export const mockServices: Service[] = [
   },
   {
     id: '7',
+    businessId: 'biz-4',
     name: 'Hidratação Capilar',
     description: 'Tratamento intensivo para reconstrução capilar',
     price: 120.00,
@@ -151,17 +164,58 @@ export const mockServices: Service[] = [
   },
   {
     id: '8',
+    businessId: 'biz-4',
     name: 'Progressiva',
     description: 'Escova progressiva para alisamento natural',
     price: 200.00,
     duration: 180,
     category: 'treatment',
   },
+  // Barbearia Clássica (biz-2)
+  {
+    id: '9',
+    businessId: 'biz-2',
+    name: 'Corte Tradicional',
+    description: 'Corte clássico com técnicas tradicionais',
+    price: 30.00,
+    duration: 30,
+    category: 'hair',
+  },
+  {
+    id: '10',
+    businessId: 'biz-2',
+    name: 'Barba',
+    description: 'Aparar e modelar barba',
+    price: 20.00,
+    duration: 20,
+    category: 'beard',
+  },
+  // The Barber Shop (biz-3)
+  {
+    id: '11',
+    businessId: 'biz-3',
+    name: 'American Cut',
+    description: 'Corte estilo americano com acabamento profissional',
+    price: 40.00,
+    duration: 35,
+    category: 'hair',
+  },
+  {
+    id: '12',
+    businessId: 'biz-3',
+    name: 'Beard Grooming',
+    description: 'Tratamento completo de barba',
+    price: 30.00,
+    duration: 25,
+    category: 'beard',
+  },
 ]
 
 export const mockProfessionals: Professional[] = [
+  // BarberPro Premium (biz-1)
   {
     id: '1',
+    businessId: 'biz-1',
     name: 'João Santos',
     role: 'Barbeiro Master',
     specialties: ['Corte Masculino', 'Barba', 'Design de Sobrancelha'],
@@ -171,6 +225,18 @@ export const mockProfessionals: Professional[] = [
   },
   {
     id: '2',
+    businessId: 'biz-1',
+    name: 'Carlos Silva',
+    role: 'Barbeiro',
+    specialties: ['Corte Masculino', 'Barba', 'Pigmentação'],
+    rating: 4.7,
+    totalAppointments: 750,
+    available: true,
+  },
+  // Estilo & Charme (biz-4)
+  {
+    id: '3',
+    businessId: 'biz-4',
     name: 'Mariana Costa',
     role: 'Cabeleireira',
     specialties: ['Coloração', 'Corte Feminino', 'Mechas'],
@@ -179,30 +245,35 @@ export const mockProfessionals: Professional[] = [
     available: true,
   },
   {
-    id: '3',
-    name: 'Carlos Silva',
-    role: 'Barbeiro',
-    specialties: ['Corte Masculino', 'Barba', 'Pigmentação'],
-    rating: 4.7,
-    totalAppointments: 750,
-    available: true,
-  },
-  {
     id: '4',
+    businessId: 'biz-4',
     name: 'Juliana Lima',
     role: 'Hair Stylist',
     specialties: ['Hidratação', 'Reconstrução', 'Tratamentos'],
     rating: 5.0,
     totalAppointments: 620,
-    available: false,
+    available: true,
   },
+  // Barbearia Clássica (biz-2)
   {
     id: '5',
+    businessId: 'biz-2',
     name: 'Ricardo Mendes',
     role: 'Barbeiro',
     specialties: ['Corte Masculino', 'Barba', 'Design'],
     rating: 4.6,
     totalAppointments: 540,
+    available: true,
+  },
+  // The Barber Shop (biz-3)
+  {
+    id: '6',
+    businessId: 'biz-3',
+    name: 'Mike Johnson',
+    role: 'Barber',
+    specialties: ['American Cuts', 'Fade', 'Beard Grooming'],
+    rating: 4.9,
+    totalAppointments: 890,
     available: true,
   },
 ]
@@ -256,6 +327,7 @@ const generateExpenses = (): Expense[] => {
 
         expenses.push({
           id: String(id++),
+          businessId: 'biz-1',
           description: template.description,
           category: template.category,
           amount: template.amount,
@@ -284,6 +356,7 @@ const generateExpenses = (): Expense[] => {
 
       expenses.push({
         id: String(id++),
+        businessId: 'biz-1',
         description: template.description,
         category: template.category,
         amount: Math.round(template.amount * variation),
@@ -299,3 +372,332 @@ const generateExpenses = (): Expense[] => {
 }
 
 export const mockExpenses: Expense[] = generateExpenses()
+
+// Categorias de negócios
+export const businessCategories: CategoryInfo[] = [
+  {
+    id: 'barbearia',
+    name: 'Barbearia',
+    description: 'Cortes masculinos, barba e acabamentos',
+    icon: 'Scissors',
+    color: 'text-blue-600',
+    bgColor: 'bg-blue-50'
+  },
+  {
+    id: 'salao',
+    name: 'Salão de Beleza',
+    description: 'Cortes, coloração e tratamentos capilares',
+    icon: 'Sparkles',
+    color: 'text-pink-600',
+    bgColor: 'bg-pink-50'
+  },
+  {
+    id: 'estetica',
+    name: 'Estética',
+    description: 'Tratamentos faciais e corporais',
+    icon: 'Heart',
+    color: 'text-purple-600',
+    bgColor: 'bg-purple-50'
+  },
+  {
+    id: 'spa',
+    name: 'Spa',
+    description: 'Relaxamento e bem-estar',
+    icon: 'Waves',
+    color: 'text-teal-600',
+    bgColor: 'bg-teal-50'
+  },
+  {
+    id: 'manicure',
+    name: 'Manicure & Pedicure',
+    description: 'Cuidados com unhas e pés',
+    icon: 'Hand',
+    color: 'text-rose-600',
+    bgColor: 'bg-rose-50'
+  },
+  {
+    id: 'massagem',
+    name: 'Massagem',
+    description: 'Massagens terapêuticas e relaxantes',
+    icon: 'Activity',
+    color: 'text-green-600',
+    bgColor: 'bg-green-50'
+  },
+  {
+    id: 'depilacao',
+    name: 'Depilação',
+    description: 'Depilação a cera e laser',
+    icon: 'Zap',
+    color: 'text-orange-600',
+    bgColor: 'bg-orange-50'
+  },
+  {
+    id: 'maquiagem',
+    name: 'Maquiagem',
+    description: 'Maquiagem profissional',
+    icon: 'Palette',
+    color: 'text-fuchsia-600',
+    bgColor: 'bg-fuchsia-50'
+  }
+]
+
+// Horários padrão de funcionamento
+const defaultBusinessHours: BusinessHours[] = [
+  { dayOfWeek: 0, open: '10:00', close: '16:00', isClosed: false }, // Domingo
+  { dayOfWeek: 1, open: '09:00', close: '19:00', isClosed: false }, // Segunda
+  { dayOfWeek: 2, open: '09:00', close: '19:00', isClosed: false }, // Terça
+  { dayOfWeek: 3, open: '09:00', close: '19:00', isClosed: false }, // Quarta
+  { dayOfWeek: 4, open: '09:00', close: '19:00', isClosed: false }, // Quinta
+  { dayOfWeek: 5, open: '09:00', close: '20:00', isClosed: false }, // Sexta
+  { dayOfWeek: 6, open: '09:00', close: '18:00', isClosed: false }, // Sábado
+]
+
+// Empresas mockadas
+export const mockBusinesses: Business[] = [
+  // Barbearias
+  {
+    id: 'biz-1',
+    name: 'BarberPro Premium',
+    category: 'barbearia',
+    description: 'Barbearia premium com profissionais especializados em cortes modernos e tradicionais',
+    address: {
+      street: 'Rua das Flores',
+      number: '123',
+      neighborhood: 'Centro',
+      city: 'São Paulo',
+      state: 'SP',
+      zipCode: '01310-100'
+    },
+    phone: '(11) 98765-4321',
+    email: 'contato@barberpro.com',
+    image: '/Connecta-ServicosPro/assets/images/barbershop1.jpg',
+    rating: 4.8,
+    totalReviews: 245,
+    businessHours: defaultBusinessHours,
+    ownerId: '1'
+  },
+  {
+    id: 'biz-2',
+    name: 'Barbearia Clássica',
+    category: 'barbearia',
+    description: 'Tradição e qualidade em cortes masculinos desde 1995',
+    address: {
+      street: 'Av. Paulista',
+      number: '1000',
+      neighborhood: 'Bela Vista',
+      city: 'São Paulo',
+      state: 'SP',
+      zipCode: '01310-100'
+    },
+    phone: '(11) 91234-5678',
+    email: 'contato@classica.com',
+    image: '/Connecta-ServicosPro/assets/images/barbershop2.jpg',
+    rating: 4.6,
+    totalReviews: 189,
+    businessHours: defaultBusinessHours,
+    ownerId: '1'
+  },
+  {
+    id: 'biz-3',
+    name: 'The Barber Shop',
+    category: 'barbearia',
+    description: 'Estilo americano com atendimento personalizado',
+    address: {
+      street: 'Rua Augusta',
+      number: '456',
+      neighborhood: 'Consolação',
+      city: 'São Paulo',
+      state: 'SP',
+      zipCode: '01305-000'
+    },
+    phone: '(11) 99876-5432',
+    email: 'hello@thebarbershop.com',
+    image: '/Connecta-ServicosPro/assets/images/barbershop3.jpg',
+    rating: 4.9,
+    totalReviews: 312,
+    businessHours: defaultBusinessHours,
+    ownerId: '1'
+  },
+
+  // Salões de Beleza
+  {
+    id: 'biz-4',
+    name: 'Estilo & Charme',
+    category: 'salao',
+    description: 'Salão completo com serviços de cabelo, maquiagem e estética',
+    address: {
+      street: 'Rua dos Pinheiros',
+      number: '789',
+      neighborhood: 'Pinheiros',
+      city: 'São Paulo',
+      state: 'SP',
+      zipCode: '05422-001'
+    },
+    phone: '(11) 97777-8888',
+    email: 'contato@estilocharme.com',
+    image: '/Connecta-ServicosPro/assets/images/salon1.jpg',
+    rating: 4.7,
+    totalReviews: 423,
+    businessHours: defaultBusinessHours,
+    ownerId: '1'
+  },
+  {
+    id: 'biz-5',
+    name: 'Beleza Pura',
+    category: 'salao',
+    description: 'Especialistas em coloração e tratamentos capilares',
+    address: {
+      street: 'Av. Faria Lima',
+      number: '2000',
+      neighborhood: 'Itaim Bibi',
+      city: 'São Paulo',
+      state: 'SP',
+      zipCode: '01452-000'
+    },
+    phone: '(11) 96666-7777',
+    email: 'atendimento@belezapura.com',
+    image: '/Connecta-ServicosPro/assets/images/salon2.jpg',
+    rating: 4.9,
+    totalReviews: 567,
+    businessHours: defaultBusinessHours,
+    ownerId: '1'
+  },
+
+  // Estética
+  {
+    id: 'biz-6',
+    name: 'Clínica Estética Renove',
+    category: 'estetica',
+    description: 'Tratamentos estéticos faciais e corporais com tecnologia de ponta',
+    address: {
+      street: 'Rua Oscar Freire',
+      number: '300',
+      neighborhood: 'Jardins',
+      city: 'São Paulo',
+      state: 'SP',
+      zipCode: '01426-001'
+    },
+    phone: '(11) 95555-4444',
+    email: 'contato@renove.com',
+    image: '/Connecta-ServicosPro/assets/images/aesthetic1.jpg',
+    rating: 4.8,
+    totalReviews: 298,
+    businessHours: defaultBusinessHours,
+    ownerId: '1'
+  },
+
+  // Spa
+  {
+    id: 'biz-7',
+    name: 'Spa Serenity',
+    category: 'spa',
+    description: 'Relaxamento e bem-estar em ambiente tranquilo',
+    address: {
+      street: 'Rua da Paz',
+      number: '500',
+      neighborhood: 'Vila Madalena',
+      city: 'São Paulo',
+      state: 'SP',
+      zipCode: '05435-020'
+    },
+    phone: '(11) 94444-3333',
+    email: 'relax@serenity.com',
+    image: '/Connecta-ServicosPro/assets/images/spa1.jpg',
+    rating: 4.9,
+    totalReviews: 412,
+    businessHours: defaultBusinessHours,
+    ownerId: '1'
+  },
+
+  // Manicure
+  {
+    id: 'biz-8',
+    name: 'Nails Art Studio',
+    category: 'manicure',
+    description: 'Nail art e cuidados com unhas e pés',
+    address: {
+      street: 'Rua Haddock Lobo',
+      number: '600',
+      neighborhood: 'Cerqueira César',
+      city: 'São Paulo',
+      state: 'SP',
+      zipCode: '01414-001'
+    },
+    phone: '(11) 93333-2222',
+    email: 'contato@nailsart.com',
+    image: '/Connecta-ServicosPro/assets/images/nails1.jpg',
+    rating: 4.7,
+    totalReviews: 334,
+    businessHours: defaultBusinessHours,
+    ownerId: '1'
+  },
+
+  // Massagem
+  {
+    id: 'biz-9',
+    name: 'Massagem & Terapia',
+    category: 'massagem',
+    description: 'Massagens terapêuticas e relaxantes com profissionais certificados',
+    address: {
+      street: 'Rua Pamplona',
+      number: '700',
+      neighborhood: 'Jardim Paulista',
+      city: 'São Paulo',
+      state: 'SP',
+      zipCode: '01405-001'
+    },
+    phone: '(11) 92222-1111',
+    email: 'info@massagemterapia.com',
+    image: '/Connecta-ServicosPro/assets/images/massage1.jpg',
+    rating: 4.8,
+    totalReviews: 267,
+    businessHours: defaultBusinessHours,
+    ownerId: '1'
+  },
+
+  // Depilação
+  {
+    id: 'biz-10',
+    name: 'Depil Laser',
+    category: 'depilacao',
+    description: 'Depilação a laser e cera com tecnologia avançada',
+    address: {
+      street: 'Rua Bela Cintra',
+      number: '800',
+      neighborhood: 'Consolação',
+      city: 'São Paulo',
+      state: 'SP',
+      zipCode: '01415-000'
+    },
+    phone: '(11) 91111-0000',
+    email: 'contato@depillaser.com',
+    image: '/Connecta-ServicosPro/assets/images/depilation1.jpg',
+    rating: 4.6,
+    totalReviews: 198,
+    businessHours: defaultBusinessHours,
+    ownerId: '1'
+  },
+
+  // Maquiagem
+  {
+    id: 'biz-11',
+    name: 'Make Up Pro',
+    category: 'maquiagem',
+    description: 'Maquiagem profissional para eventos e dia a dia',
+    address: {
+      street: 'Rua Estados Unidos',
+      number: '900',
+      neighborhood: 'Jardim América',
+      city: 'São Paulo',
+      state: 'SP',
+      zipCode: '01427-001'
+    },
+    phone: '(11) 90000-9999',
+    email: 'atendimento@makeuppro.com',
+    image: '/Connecta-ServicosPro/assets/images/makeup1.jpg',
+    rating: 4.9,
+    totalReviews: 389,
+    businessHours: defaultBusinessHours,
+    ownerId: '1'
+  },
+]

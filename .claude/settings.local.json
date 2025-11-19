@@ -12,7 +12,9 @@
       "Bash(code:*)",
       "Bash(findstr:*)",
       "Bash(nul)",
-      "Bash(npx tsc --noEmit)"
+      "Bash(npx tsc --noEmit)",
+      "Bash(git ls-tree:*)",
+      "Bash(gh repo view:*)"
     ],
     "deny": [],
     "ask": []

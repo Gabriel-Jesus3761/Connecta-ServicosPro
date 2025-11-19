@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       client: {
         id: '2',
         name: 'João Silva',
-        email: 'joao@email.com',
+        email: 'cliente@email.com',
         role: 'client' as UserRole,
         avatar: undefined,
       },
@@ -63,11 +63,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (email === 'admin@barberpro.com' && password === 'admin123' && role === 'owner') {
       setUser(demoUsers.owner)
       localStorage.setItem('barberpro_user', JSON.stringify(demoUsers.owner))
-      navigate('/')
+      // Proprietário vai para seleção de empresa
+      navigate('/selecionar-empresa')
     } else if (email === 'cliente@email.com' && password === 'cliente123' && role === 'client') {
       setUser(demoUsers.client)
       localStorage.setItem('barberpro_user', JSON.stringify(demoUsers.client))
-      navigate('/cliente')
+      // Cliente vai para a home para navegar
+      navigate('/')
     } else {
       throw new Error('Credenciais inválidas')
     }

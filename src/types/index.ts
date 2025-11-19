@@ -1,9 +1,45 @@
 export type PaymentMethod = 'pix' | 'credit' | 'debit' | 'cash' | 'boleto'
 
+export type BusinessCategory = 'barbearia' | 'estetica' | 'spa' | 'salao' | 'manicure' | 'massagem' | 'depilacao' | 'maquiagem'
+
+export interface BusinessHours {
+  dayOfWeek: number // 0-6 (domingo a sábado)
+  open: string // formato "HH:mm"
+  close: string // formato "HH:mm"
+  isClosed: boolean
+}
+
+export interface Business {
+  id: string
+  name: string
+  category: BusinessCategory
+  description: string
+  address: {
+    street: string
+    number: string
+    neighborhood: string
+    city: string
+    state: string
+    zipCode: string
+  }
+  phone: string
+  email: string
+  image: string
+  gallery?: string[]
+  rating: number
+  totalReviews: number
+  businessHours: BusinessHours[]
+  ownerId: string
+}
+
 export interface Appointment {
   id: string
+  businessId: string
+  clientId: string
   clientName: string
+  serviceId: string
   service: string
+  professionalId: string
   professional: string
   date: Date
   time: string
@@ -15,16 +51,18 @@ export interface Appointment {
 
 export interface Service {
   id: string
+  businessId: string
   name: string
   description: string
   price: number
   duration: number
-  category: 'hair' | 'beard' | 'color' | 'treatment' | 'spa'
+  category: 'hair' | 'beard' | 'color' | 'treatment' | 'spa' | 'nails' | 'skin' | 'massage' | 'depilation' | 'makeup'
   image?: string
 }
 
 export interface Professional {
   id: string
+  businessId: string
   name: string
   role: string
   avatar?: string
@@ -45,6 +83,7 @@ export type ExpenseCategory = 'rent' | 'utilities' | 'supplies' | 'salaries' | '
 
 export interface Expense {
   id: string
+  businessId: string
   description: string
   category: ExpenseCategory
   amount: number
@@ -52,4 +91,13 @@ export interface Expense {
   paymentMethod?: PaymentMethod
   isPaid: boolean
   recurring: boolean
+}
+
+export interface CategoryInfo {
+  id: BusinessCategory
+  name: string
+  description: string
+  icon: string
+  color: string
+  bgColor: string
 }

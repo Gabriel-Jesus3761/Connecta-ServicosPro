@@ -14,14 +14,25 @@ import { Servicos } from './pages/Servicos'
 import { Profissionais } from './pages/Profissionais'
 import { Login } from './pages/Login'
 import { ClienteDashboard } from './pages/ClienteDashboard'
+import { Home } from './pages/Home'
+import { EmpresasPorCategoria } from './pages/EmpresasPorCategoria'
+import { EmpresaDetalhes } from './pages/EmpresaDetalhes'
+import { SelecionarEmpresa } from './pages/SelecionarEmpresa'
+import { Checkout } from './pages/Checkout'
+import { ConfirmacaoAgendamento } from './pages/ConfirmacaoAgendamento'
 
 function App() {
   return (
     <Router basename="/Connecta-ServicosPro">
       <AuthProvider>
         <Routes>
-          {/* Rota pública */}
+          {/* Rotas Públicas */}
+          <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/categorias/:categoryId" element={<EmpresasPorCategoria />} />
+          <Route path="/empresas/:businessId" element={<EmpresaDetalhes />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/confirmacao-agendamento" element={<ConfirmacaoAgendamento />} />
 
           {/* Rotas do Cliente */}
           <Route
@@ -33,9 +44,19 @@ function App() {
             }
           />
 
-          {/* Rotas do Proprietário (Admin) */}
+          {/* Rota de Seleção de Empresa (Proprietário) */}
           <Route
-            path="/"
+            path="/selecionar-empresa"
+            element={
+              <ProtectedRoute allowedRoles={['owner']}>
+                <SelecionarEmpresa />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Rotas do Proprietário (Admin) - Dashboard da Empresa Selecionada */}
+          <Route
+            path="/dashboard"
             element={
               <ProtectedRoute allowedRoles={['owner']}>
                 <Layout />
@@ -43,15 +64,44 @@ function App() {
             }
           >
             <Route index element={<Dashboard />} />
-            <Route path="dashboard/financeiro" element={<DashboardFinanceiro />} />
-            <Route path="dashboard/vendas" element={<DashboardVendas />} />
-            <Route path="dashboard/profissionais" element={<DashboardProfissionais />} />
-            <Route path="dashboard/servicos" element={<DashboardServicos />} />
-            <Route path="dashboard/clientes" element={<DashboardClientes />} />
-            <Route path="dashboard/agendamentos" element={<DashboardAgendamentos />} />
-            <Route path="agendamentos" element={<Agendamentos />} />
-            <Route path="servicos" element={<Servicos />} />
-            <Route path="profissionais" element={<Profissionais />} />
+            <Route path="financeiro" element={<DashboardFinanceiro />} />
+            <Route path="vendas" element={<DashboardVendas />} />
+            <Route path="profissionais" element={<DashboardProfissionais />} />
+            <Route path="servicos" element={<DashboardServicos />} />
+            <Route path="clientes" element={<DashboardClientes />} />
+            <Route path="agendamentos" element={<DashboardAgendamentos />} />
+          </Route>
+
+          {/* Rotas antigas de gerenciamento (agora dentro do dashboard) */}
+          <Route
+            path="/agendamentos"
+            element={
+              <ProtectedRoute allowedRoles={['owner']}>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Agendamentos />} />
+          </Route>
+          <Route
+            path="/servicos"
+            element={
+              <ProtectedRoute allowedRoles={['owner']}>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Servicos />} />
+          </Route>
+          <Route
+            path="/profissionais"
+            element={
+              <ProtectedRoute allowedRoles={['owner']}>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Profissionais />} />
           </Route>
         </Routes>
       </AuthProvider>
