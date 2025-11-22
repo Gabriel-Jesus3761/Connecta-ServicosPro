@@ -21,17 +21,17 @@ export function SelecionarEmpresa() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-black">
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm"
+        className="bg-black/80 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gold rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-gradient-to-br from-gold to-yellow-600 rounded-full flex items-center justify-center">
                 <img
                   src="/Connecta-ServicosPro/assets/images/Logo.png"
                   alt="Logo"
@@ -39,16 +39,20 @@ export function SelecionarEmpresa() {
                 />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Connecta ServiçosPro</h1>
-                <p className="text-sm text-gray-600">Área do Proprietário</p>
+                <h1 className="text-2xl font-bold text-white">Connecta ServiçosPro</h1>
+                <p className="text-sm text-gray-400">Área do Proprietário</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-                <p className="text-xs text-gray-500">{user?.email}</p>
+                <p className="text-sm font-medium text-white">{user?.name}</p>
+                <p className="text-xs text-gray-400">{user?.email}</p>
               </div>
-              <Button variant="outline" onClick={logout}>
+              <Button
+                variant="outline"
+                onClick={logout}
+                className="border-white/10 hover:bg-white/5 text-white"
+              >
                 Sair
               </Button>
             </div>
@@ -64,10 +68,10 @@ export function SelecionarEmpresa() {
           transition={{ delay: 0.1 }}
           className="text-center mb-12"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-gray-100 to-white bg-clip-text text-transparent mb-4">
             Selecione uma Empresa
           </h2>
-          <p className="text-lg text-gray-600 mb-8">
+          <p className="text-lg text-gray-400 mb-8">
             Escolha qual estabelecimento você deseja gerenciar
           </p>
         </motion.div>
@@ -79,31 +83,40 @@ export function SelecionarEmpresa() {
           transition={{ delay: 0.2 }}
           className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12"
         >
-          <div className="bg-white rounded-xl p-6 text-center shadow-sm border border-gray-100">
+          <motion.div
+            whileHover={{ scale: 1.05, y: -5 }}
+            className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 text-center hover:border-gold/50 transition-all"
+          >
             <Building2 className="w-8 h-8 text-gold mx-auto mb-2" />
-            <p className="text-3xl font-bold text-gray-900">{userBusinesses.length}</p>
-            <p className="text-sm text-gray-600">
+            <p className="text-3xl font-bold text-white">{userBusinesses.length}</p>
+            <p className="text-sm text-gray-400">
               {userBusinesses.length === 1 ? 'Estabelecimento' : 'Estabelecimentos'}
             </p>
-          </div>
-          <div className="bg-white rounded-xl p-6 text-center shadow-sm border border-gray-100">
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.05, y: -5 }}
+            className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 text-center hover:border-gold/50 transition-all"
+          >
             <Star className="w-8 h-8 text-gold mx-auto mb-2" />
-            <p className="text-3xl font-bold text-gray-900">
+            <p className="text-3xl font-bold text-white">
               {userBusinesses.length > 0
                 ? (
                     userBusinesses.reduce((acc, b) => acc + b.rating, 0) / userBusinesses.length
                   ).toFixed(1)
                 : '0.0'}
             </p>
-            <p className="text-sm text-gray-600">Avaliação Média</p>
-          </div>
-          <div className="bg-white rounded-xl p-6 text-center shadow-sm border border-gray-100">
+            <p className="text-sm text-gray-400">Avaliação Média</p>
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.05, y: -5 }}
+            className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 text-center hover:border-gold/50 transition-all"
+          >
             <TrendingUp className="w-8 h-8 text-gold mx-auto mb-2" />
-            <p className="text-3xl font-bold text-gray-900">
+            <p className="text-3xl font-bold text-white">
               {userBusinesses.reduce((acc, b) => acc + b.totalReviews, 0)}
             </p>
-            <p className="text-sm text-gray-600">Total de Avaliações</p>
-          </div>
+            <p className="text-sm text-gray-400">Total de Avaliações</p>
+          </motion.div>
         </motion.div>
 
         {/* Business Cards */}
@@ -114,22 +127,24 @@ export function SelecionarEmpresa() {
             transition={{ delay: 0.3 }}
             className="text-center py-16"
           >
-            <Building2 className="w-20 h-20 mx-auto text-gray-300 mb-6" />
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+            <Building2 className="w-20 h-20 mx-auto text-gray-600 mb-6" />
+            <h3 className="text-2xl font-bold text-white mb-2">
               Nenhuma empresa cadastrada
             </h3>
-            <p className="text-gray-600 mb-8">
+            <p className="text-gray-400 mb-8">
               Cadastre seu primeiro estabelecimento para começar
             </p>
-            <Button
-              variant="default"
-              size="lg"
-              className="bg-gold hover:bg-gold-dark"
-              onClick={() => alert('Funcionalidade de cadastro em desenvolvimento')}
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Cadastrar Estabelecimento
-            </Button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                variant="default"
+                size="lg"
+                className="bg-gradient-to-r from-gold to-yellow-600 hover:from-yellow-600 hover:to-gold text-black font-semibold"
+                onClick={() => alert('Funcionalidade de cadastro em desenvolvimento')}
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Cadastrar Estabelecimento
+              </Button>
+            </motion.div>
           </motion.div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -141,20 +156,27 @@ export function SelecionarEmpresa() {
                 transition={{ delay: index * 0.1 }}
                 whileHover={{ y: -8 }}
               >
-                <Card className="h-full cursor-pointer hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-gold group overflow-hidden">
+                <Card className="h-full cursor-pointer hover:shadow-2xl hover:shadow-gold/10 transition-all duration-300 border-2 border-white/10 hover:border-gold/50 group overflow-hidden bg-white/5 backdrop-blur-sm">
                   {/* Image/Banner */}
-                  <div className="relative h-40 bg-gradient-to-br from-gold/20 to-gold/5">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                  <div className="relative h-40 bg-gradient-to-br from-gold/20 to-gold/5 overflow-hidden">
+                    {business.image && (
+                      <img
+                        src={business.image}
+                        alt={business.name}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
                     <div className="absolute top-3 right-3">
-                      <Badge className="bg-white/90 text-gray-900 hover:bg-white">
-                        <Star className="w-3 h-3 mr-1 fill-yellow-400 text-yellow-400" />
+                      <Badge className="bg-gradient-to-r from-gold to-yellow-600 text-black border-0">
+                        <Star className="w-3 h-3 mr-1 fill-black" />
                         {business.rating.toFixed(1)}
                       </Badge>
                     </div>
                     <div className="absolute bottom-3 left-3 right-3">
                       <Badge
                         variant="outline"
-                        className="bg-white/90 text-gray-900 border-white"
+                        className="bg-white/10 backdrop-blur-sm text-white border-white/20"
                       >
                         {business.category}
                       </Badge>
@@ -163,17 +185,17 @@ export function SelecionarEmpresa() {
 
                   <CardContent className="p-6">
                     {/* Business Name */}
-                    <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-gold transition-colors">
+                    <h3 className="text-xl font-bold text-white mb-2 group-hover:bg-gradient-to-r group-hover:from-gold group-hover:to-yellow-600 group-hover:bg-clip-text group-hover:text-transparent transition-all">
                       {business.name}
                     </h3>
 
                     {/* Description */}
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                    <p className="text-sm text-gray-400 mb-4 line-clamp-2">
                       {business.description}
                     </p>
 
                     {/* Address */}
-                    <div className="flex items-start gap-2 text-sm text-gray-600 mb-4">
+                    <div className="flex items-start gap-2 text-sm text-gray-400 mb-4">
                       <MapPin className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" />
                       <p className="line-clamp-2">
                         {business.address.neighborhood}, {business.address.city} - {business.address.state}
@@ -181,22 +203,24 @@ export function SelecionarEmpresa() {
                     </div>
 
                     {/* Reviews */}
-                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-6">
-                      <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                    <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
+                      <Star className="w-4 h-4 text-gold fill-gold" />
                       <p>
                         {business.totalReviews} avalia{business.totalReviews !== 1 ? 'ções' : 'ção'}
                       </p>
                     </div>
 
                     {/* Action Button */}
-                    <Button
-                      variant="default"
-                      className="w-full bg-gold hover:bg-gold-dark"
-                      onClick={() => handleSelectBusiness(business.id)}
-                    >
-                      Gerenciar
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
+                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                      <Button
+                        variant="default"
+                        className="w-full bg-gradient-to-r from-gold to-yellow-600 hover:from-yellow-600 hover:to-gold text-black font-semibold"
+                        onClick={() => handleSelectBusiness(business.id)}
+                      >
+                        Gerenciar
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    </motion.div>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -210,17 +234,17 @@ export function SelecionarEmpresa() {
               whileHover={{ y: -8 }}
             >
               <Card
-                className="h-full cursor-pointer hover:shadow-2xl transition-all duration-300 border-2 border-dashed border-gray-300 hover:border-gold group"
+                className="h-full cursor-pointer hover:shadow-2xl hover:shadow-gold/10 transition-all duration-300 border-2 border-dashed border-white/20 hover:border-gold/50 group bg-white/5 backdrop-blur-sm"
                 onClick={() => alert('Funcionalidade de cadastro em desenvolvimento')}
               >
                 <CardContent className="p-6 flex flex-col items-center justify-center h-full min-h-[400px]">
-                  <div className="w-20 h-20 bg-gray-100 group-hover:bg-gold/10 rounded-full flex items-center justify-center mb-4 transition-colors">
+                  <div className="w-20 h-20 bg-white/5 group-hover:bg-gold/20 rounded-full flex items-center justify-center mb-4 transition-colors">
                     <Plus className="w-10 h-10 text-gray-400 group-hover:text-gold transition-colors" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-gold transition-colors">
+                  <h3 className="text-xl font-bold text-white mb-2 group-hover:bg-gradient-to-r group-hover:from-gold group-hover:to-yellow-600 group-hover:bg-clip-text group-hover:text-transparent transition-all">
                     Adicionar Estabelecimento
                   </h3>
-                  <p className="text-sm text-gray-600 text-center">
+                  <p className="text-sm text-gray-400 text-center">
                     Cadastre um novo estabelecimento para gerenciar
                   </p>
                 </CardContent>

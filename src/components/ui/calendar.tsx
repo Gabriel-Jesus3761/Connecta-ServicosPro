@@ -32,7 +32,7 @@ export function Calendar({
     "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
   ]
 
-  const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
+  const dayNames = ["D", "S", "T", "Q", "Q", "S", "S"]
 
   const previousMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))
@@ -97,6 +97,19 @@ export function Calendar({
     return range?.to?.toDateString() === date.toDateString()
   }
 
+  const isToday = (day: number) => {
+    const today = new Date()
+    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+    return today.toDateString() === date.toDateString()
+  }
+
+  const isPastDate = (day: number) => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+    return date < today
+  }
+
   const renderDays = () => {
     const days = []
     const totalDays = daysInMonth(currentDate)
@@ -112,14 +125,25 @@ export function Calendar({
       const selected = isSelected(day)
       const rangeStart = isRangeStart(day)
       const rangeEnd = isRangeEnd(day)
+      const today = isToday(day)
+      const past = isPastDate(day)
 
       days.push(
         <button
           key={day}
-          onClick={() => handleDateClick(day)}
+          onClick={() => !past && handleDateClick(day)}
+          disabled={past}
           className={cn(
-            "p-2 text-sm rounded-md hover:bg-gold/10 transition-colors",
-            selected && "bg-gold text-white hover:bg-gold-dark",
+            "w-9 h-9 text-sm rounded-full flex items-center justify-center transition-all duration-200 font-medium",
+            // Default state
+            !selected && !today && !past && "text-white hover:bg-gold/20 hover:text-gold",
+            // Today highlight
+            today && !selected && "bg-gold/20 text-gold border border-gold/50",
+            // Selected state
+            selected && "bg-gradient-to-br from-gold to-yellow-600 text-black shadow-lg shadow-gold/30",
+            // Past dates
+            past && "text-gray-600 cursor-not-allowed opacity-50",
+            // Range styles
             rangeStart && "rounded-r-none",
             rangeEnd && "rounded-l-none",
             selected && !rangeStart && !rangeEnd && mode === "range" && "rounded-none"
@@ -134,19 +158,22 @@ export function Calendar({
   }
 
   return (
-    <div className={cn("p-4 bg-white rounded-lg border", className)}>
+    <div className={cn(
+      "p-5 rounded-2xl border border-gold/30 bg-gradient-to-br from-gray-900/95 via-gray-800/95 to-gray-900/95 backdrop-blur-xl shadow-2xl shadow-gold/10",
+      className
+    )}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-5">
         <Button
           variant="ghost"
           size="icon"
           onClick={previousMonth}
-          className="h-8 w-8"
+          className="h-9 w-9 rounded-full bg-white/5 hover:bg-gold/20 text-gray-400 hover:text-gold transition-all border border-white/10 hover:border-gold/50"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="h-5 w-5" />
         </Button>
 
-        <h3 className="font-semibold text-sm">
+        <h3 className="font-bold text-base bg-gradient-to-r from-gold to-yellow-500 bg-clip-text text-transparent">
           {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
         </h3>
 
@@ -154,24 +181,45 @@ export function Calendar({
           variant="ghost"
           size="icon"
           onClick={nextMonth}
-          className="h-8 w-8"
+          className="h-9 w-9 rounded-full bg-white/5 hover:bg-gold/20 text-gray-400 hover:text-gold transition-all border border-white/10 hover:border-gold/50"
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-5 w-5" />
         </Button>
       </div>
 
       {/* Day names */}
-      <div className="grid grid-cols-7 gap-1 mb-2">
-        {dayNames.map((name) => (
-          <div key={name} className="text-xs text-gray-500 text-center font-medium p-2">
+      <div className="grid grid-cols-7 gap-1 mb-3">
+        {dayNames.map((name, index) => (
+          <div
+            key={`${name}-${index}`}
+            className={cn(
+              "text-xs text-center font-semibold p-2",
+              index === 0 || index === 6 ? "text-gold/70" : "text-gray-500"
+            )}
+          >
             {name}
           </div>
         ))}
       </div>
 
+      {/* Divider */}
+      <div className="h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent mb-3" />
+
       {/* Days */}
       <div className="grid grid-cols-7 gap-1">
         {renderDays()}
+      </div>
+
+      {/* Footer legend */}
+      <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-center gap-4 text-xs">
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-gold/20 border border-gold/50" />
+          <span className="text-gray-500">Hoje</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-gradient-to-br from-gold to-yellow-600" />
+          <span className="text-gray-500">Selecionado</span>
+        </div>
       </div>
     </div>
   )

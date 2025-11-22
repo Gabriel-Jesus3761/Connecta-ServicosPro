@@ -20,6 +20,8 @@ import { EmpresaDetalhes } from './pages/EmpresaDetalhes'
 import { SelecionarEmpresa } from './pages/SelecionarEmpresa'
 import { Checkout } from './pages/Checkout'
 import { ConfirmacaoAgendamento } from './pages/ConfirmacaoAgendamento'
+import { ProfissionalDashboard } from './pages/ProfissionalDashboard'
+import { ProfissionalPerfil } from './pages/ProfissionalPerfil'
 
 function App() {
   return (
@@ -40,6 +42,24 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['client']}>
                 <ClienteDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Rotas do Profissional */}
+          <Route
+            path="/profissional"
+            element={
+              <ProtectedRoute allowedRoles={['professional']}>
+                <ProfissionalDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profissional/perfil"
+            element={
+              <ProtectedRoute allowedRoles={['professional']}>
+                <ProfissionalPerfil />
               </ProtectedRoute>
             }
           />

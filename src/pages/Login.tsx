@@ -1,16 +1,15 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Mail, Eye, EyeOff, User, Crown } from "lucide-react";
+import { Lock, Mail, Eye, EyeOff, User, Crown, Scissors, Sparkles, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
 import { useAuth, UserRole } from "@/contexts/AuthContext";
 
 export function Login() {
   const { login, isLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [selectedRole, setSelectedRole] = useState<UserRole>("client");
+  const [isFocused, setIsFocused] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -70,10 +69,18 @@ export function Login() {
       [name]: type === "checkbox" ? checked : value,
     }));
 
-    // Limpar erro ao digitar
     if (errors[name as keyof typeof errors]) {
       setErrors((prev) => ({ ...prev, [name]: "", general: "" }));
     }
+  };
+
+  const handleSelectRole = (role: UserRole) => {
+    setSelectedRole(role);
+    setIsFocused(true);
+  };
+
+  const handleBack = () => {
+    setIsFocused(false);
   };
 
   const roleOptions = [
@@ -82,416 +89,437 @@ export function Login() {
       title: "Cliente",
       description: "Agende seus horários",
       icon: User,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
-      borderColor: "border-blue-500",
+      colors: {
+        primary: "from-blue-500 to-blue-600",
+        border: "border-blue-500",
+        bg: "bg-blue-500",
+        bgLight: "bg-blue-500/10",
+        text: "text-blue-400",
+        shadow: "shadow-blue-500/30",
+        ring: "focus:ring-blue-500/30 focus:border-blue-500/50",
+        glow: "rgba(59, 130, 246, 0.2)",
+        cardShadow: "rgba(59, 130, 246, 0.15)",
+        borderColor: "rgba(59, 130, 246, 0.3)",
+      }
+    },
+    {
+      role: "professional" as UserRole,
+      title: "Profissional",
+      description: "Gerencie atendimentos",
+      icon: Scissors,
+      colors: {
+        primary: "from-emerald-500 to-green-600",
+        border: "border-emerald-500",
+        bg: "bg-emerald-500",
+        bgLight: "bg-emerald-500/10",
+        text: "text-emerald-400",
+        shadow: "shadow-emerald-500/30",
+        ring: "focus:ring-emerald-500/30 focus:border-emerald-500/50",
+        glow: "rgba(16, 185, 129, 0.2)",
+        cardShadow: "rgba(16, 185, 129, 0.15)",
+        borderColor: "rgba(16, 185, 129, 0.3)",
+      }
     },
     {
       role: "owner" as UserRole,
       title: "Proprietário",
-      description: "Gerencie sua barbearia",
+      description: "Gerencie sua empresa",
       icon: Crown,
-      color: "text-gold",
-      bgColor: "bg-gold-light",
-      borderColor: "border-gold",
+      colors: {
+        primary: "from-gold to-yellow-600",
+        border: "border-gold",
+        bg: "bg-gold",
+        bgLight: "bg-gold/10",
+        text: "text-gold",
+        shadow: "shadow-gold/30",
+        ring: "focus:ring-gold/30 focus:border-gold/50",
+        glow: "rgba(212, 175, 55, 0.2)",
+        cardShadow: "rgba(212, 175, 55, 0.15)",
+        borderColor: "rgba(212, 175, 55, 0.3)",
+      }
     },
   ];
 
+  const getCredentials = () => {
+    if (selectedRole === "owner") {
+      return { email: "admin@barberpro.com", senha: "admin123" };
+    } else if (selectedRole === "professional") {
+      return { email: "profissional@barberpro.com", senha: "prof123" };
+    }
+    return { email: "cliente@email.com", senha: "cliente123" };
+  };
+
+  const currentRoleOption = roleOptions.find(r => r.role === selectedRole)!;
+  const colors = currentRoleOption.colors;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-5">
+    <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0">
+        <motion.div
+          animate={{ backgroundColor: colors.glow }}
+          transition={{ duration: 0.5 }}
+          className="absolute top-1/4 -left-20 w-96 h-96 rounded-full blur-3xl"
+        />
+        <motion.div
+          animate={{ backgroundColor: colors.glow }}
+          transition={{ duration: 0.5 }}
+          className="absolute bottom-1/4 -right-20 w-96 h-96 rounded-full blur-3xl opacity-50"
+        />
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 opacity-[0.02]"
           style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30z' fill='%23D4AF37' fillOpacity='0.4'/%3E%3C/svg%3E")`,
-            backgroundSize: "30px 30px",
+            backgroundImage: `linear-gradient(rgba(212, 175, 55, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(212, 175, 55, 0.3) 1px, transparent 1px)`,
+            backgroundSize: '50px 50px'
           }}
-        ></div>
+        />
       </div>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md relative z-10"
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-lg relative z-10"
       >
+        {/* Main Card */}
         <motion.div
-          animate={{
-            borderColor:
-              selectedRole === "client"
-                ? "rgba(37, 99, 235, 0.3)"
-                : "rgba(212, 175, 55, 0.2)",
-          }}
+          animate={{ borderColor: colors.borderColor }}
           transition={{ duration: 0.3 }}
+          className="bg-gradient-to-br from-gray-900/90 via-gray-800/90 to-gray-900/90 backdrop-blur-xl rounded-3xl border shadow-2xl p-6 sm:p-8 relative"
+          style={{ boxShadow: `0 25px 50px -12px ${colors.cardShadow}` }}
         >
-          <Card
-            className={`shadow-2xl transition-colors duration-300 ${
-              selectedRole === "client"
-                ? "border-blue-500/30"
-                : "border-gold/20"
-            }`}
-          >
-            <CardContent className="p-8">
-              {/* Logo */}
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                className="flex justify-center mb-8"
+          {/* Botão Voltar - Canto superior direito */}
+          <AnimatePresence>
+            {isFocused && (
+              <motion.button
+                type="button"
+                onClick={handleBack}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.3 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className="absolute top-4 right-4 w-9 h-9 rounded-lg flex items-center justify-center bg-white/5 border border-white/10 hover:bg-white/10 transition-all z-10"
               >
-                <motion.div
-                  animate={{
-                    backgroundColor:
-                      selectedRole === "client" ? "#2563eb" : "#D4AF37",
-                  }}
-                  transition={{ duration: 0.3 }}
-                  className="w-20 h-20 rounded-full flex items-center justify-center shadow-lg overflow-hidden"
-                >
-                  <img
-                    src="/Connecta-ServicosPro/assets/images/Logo.png"
-                    alt="Logo BarberPro"
-                    className="w-full h-full object-cover scale-110"
-                  />
-                </motion.div>
+                <ArrowLeft className="w-4 h-4 text-gray-400" />
+              </motion.button>
+            )}
+          </AnimatePresence>
+
+          {/* Logo */}
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+            className="flex justify-center mb-5"
+          >
+            <div className="relative">
+              <motion.div
+                animate={{ boxShadow: `0 10px 25px -5px ${colors.cardShadow}` }}
+                className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gold to-yellow-600 flex items-center justify-center overflow-hidden"
+              >
+                <img
+                  src="/Connecta-ServicosPro/assets/images/Logo.png"
+                  alt="Logo"
+                  className="w-full h-full object-cover"
+                />
               </motion.div>
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                className="absolute -inset-1 rounded-2xl border border-gold/30"
+              />
+            </div>
+          </motion.div>
 
-              {/* Title */}
-              <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                  Bem-vindo de volta
-                </h1>
-                <p className="text-gray-600">Selecione como deseja acessar</p>
-              </div>
+          {/* Title */}
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold text-white mb-1">Bem-vindo de volta</h1>
+            <p className="text-gray-400 text-sm">Selecione como deseja acessar</p>
+          </div>
 
-              {/* Role Selection */}
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                {roleOptions.map((option) => {
-                  const Icon = option.icon;
-                  const isSelected = selectedRole === option.role;
-
-                  return (
-                    <motion.button
-                      key={option.role}
-                      type="button"
-                      onClick={() => setSelectedRole(option.role)}
-                      className={`
-                      relative p-4 rounded-lg border-2 transition-all
-                      ${
-                        isSelected
-                          ? `${option.borderColor} ${option.bgColor}`
-                          : "border-gray-200 bg-white hover:border-gray-300"
-                      }
-                    `}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <div className="flex flex-col items-center gap-2">
-                        <div
-                          className={`
-                        w-12 h-12 rounded-full flex items-center justify-center
-                        ${isSelected ? "bg-white" : option.bgColor}
-                      `}
-                        >
-                          <Icon className={`w-6 h-6 ${option.color}`} />
-                        </div>
-                        <div>
-                          <p
-                            className={`font-semibold text-sm ${
-                              isSelected ? option.color : "text-gray-700"
-                            }`}
-                          >
-                            {option.title}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {option.description}
-                          </p>
-                        </div>
-                      </div>
-                      {isSelected && (
-                        <motion.div
-                          layoutId="selected-ring"
-                          className={`absolute inset-0 border-2 rounded-lg ${option.borderColor}`}
-                          initial={false}
-                          transition={{
-                            type: "spring",
-                            stiffness: 300,
-                            damping: 30,
-                          }}
-                        />
-                      )}
-                    </motion.button>
-                  );
-                })}
-              </div>
-
-              {/* Demo Credentials */}
-              <AnimatePresence mode="wait">
+          {/* Role Selection - Com animação de foco suave */}
+          <div className="relative mb-6">
+            <AnimatePresence mode="wait">
+              {!isFocused ? (
+                /* 3 opções lado a lado */
                 <motion.div
-                  key={selectedRole}
-                  initial={{ opacity: 0, y: -10 }}
+                  key="grid"
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-6"
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.35, ease: "easeInOut" }}
+                  className="grid grid-cols-3 gap-3"
                 >
-                  <p className="text-xs font-semibold text-gray-700 mb-1">
-                    Credenciais de demonstração:
-                  </p>
-                  {selectedRole === "owner" ? (
-                    <div className="text-xs text-gray-600">
-                      <p>
-                        Email:{" "}
-                        <code className="bg-white px-1 py-0.5 rounded">
-                          admin@barberpro.com
-                        </code>
-                      </p>
-                      <p>
-                        Senha:{" "}
-                        <code className="bg-white px-1 py-0.5 rounded">
-                          admin123
-                        </code>
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="text-xs text-gray-600">
-                      <p>
-                        Email:{" "}
-                        <code className="bg-white px-1 py-0.5 rounded">
-                          cliente@email.com
-                        </code>
-                      </p>
-                      <p>
-                        Senha:{" "}
-                        <code className="bg-white px-1 py-0.5 rounded">
-                          cliente123
-                        </code>
-                      </p>
-                    </div>
-                  )}
+                  {roleOptions.map((option, index) => {
+                    const Icon = option.icon;
+                    const isSelected = selectedRole === option.role;
+
+                    return (
+                      <motion.button
+                        key={option.role}
+                        type="button"
+                        onClick={() => handleSelectRole(option.role)}
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.08 * index, duration: 0.3 }}
+                        whileHover={{ scale: 1.05, y: -3 }}
+                        whileTap={{ scale: 0.95 }}
+                        className={`
+                          p-3 rounded-xl border-2 transition-all duration-300 flex flex-col items-center gap-2
+                          ${isSelected
+                            ? `${option.colors.bgLight} ${option.colors.border}`
+                            : "border-white/10 bg-white/5 hover:bg-white/10"
+                          }
+                        `}
+                      >
+                        <div className={`
+                          w-12 h-12 rounded-xl flex items-center justify-center transition-all
+                          bg-gradient-to-br ${option.colors.primary} ${option.colors.shadow} shadow-lg
+                        `}>
+                          <Icon className="w-6 h-6 text-white" />
+                        </div>
+                        <p className={`text-xs font-semibold ${isSelected ? "text-white" : "text-gray-400"}`}>
+                          {option.title}
+                        </p>
+                      </motion.button>
+                    );
+                  })}
                 </motion.div>
-              </AnimatePresence>
-
-              {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* General Error */}
-                {errors.general && (
+              ) : (
+                /* Ícone focado grande - centralizado */
+                <motion.div
+                  key="focused"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.35, ease: "easeInOut" }}
+                  className="flex items-center justify-center gap-4"
+                >
                   <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm"
+                    initial={{ scale: 0.6, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
+                    className={`
+                      w-16 h-16 rounded-2xl flex items-center justify-center
+                      bg-gradient-to-br ${colors.primary} ${colors.shadow} shadow-2xl
+                    `}
                   >
-                    {errors.general}
+                    <currentRoleOption.icon className="w-8 h-8 text-white" />
                   </motion.div>
-                )}
 
-                {/* Email Field */}
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-gray-700">
-                    Email
-                  </Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className={`pl-10 ${
-                        errors.email
-                          ? "border-red-500 focus-visible:ring-red-500"
-                          : ""
-                      }`}
-                    />
-                  </div>
-                  {errors.email && (
-                    <motion.p
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="text-sm text-red-500"
-                    >
-                      {errors.email}
-                    </motion.p>
-                  )}
-                </div>
-
-                {/* Password Field */}
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-gray-700">
-                    Senha
-                  </Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <Input
-                      id="password"
-                      name="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      value={formData.password}
-                      onChange={handleChange}
-                      className={`pl-10 pr-10 ${
-                        errors.password
-                          ? "border-red-500 focus-visible:ring-red-500"
-                          : ""
-                      }`}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="w-5 h-5" />
-                      ) : (
-                        <Eye className="w-5 h-5" />
-                      )}
-                    </button>
-                  </div>
-                  {errors.password && (
-                    <motion.p
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="text-sm text-red-500"
-                    >
-                      {errors.password}
-                    </motion.p>
-                  )}
-                </div>
-
-                {/* Remember Me & Forgot Password */}
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      name="rememberMe"
-                      checked={formData.rememberMe}
-                      onChange={handleChange}
-                      className={`w-4 h-4 rounded border-gray-300 ${
-                        selectedRole === "client"
-                          ? "text-blue-600 focus:ring-blue-500"
-                          : "text-gold focus:ring-gold"
-                      }`}
-                    />
-                    <span className="text-sm text-gray-700">Lembrar-me</span>
-                  </label>
-                  <button
-                    type="button"
-                    className={`text-sm transition-colors ${
-                      selectedRole === "client"
-                        ? "text-blue-600 hover:text-blue-700"
-                        : "text-gold hover:text-gold-dark"
-                    }`}
+                  <motion.div
+                    initial={{ opacity: 0, x: 15 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.35, delay: 0.1 }}
+                    className="text-left"
                   >
-                    Esqueceu a senha?
-                  </button>
-                </div>
+                    <p className="font-bold text-white">{currentRoleOption.title}</p>
+                    <p className={`text-sm ${colors.text}`}>{currentRoleOption.description}</p>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
-                {/* Submit Button */}
-                <Button
-                  type="submit"
-                  variant={selectedRole === "client" ? "default" : "gold"}
-                  className={`w-full ${
-                    selectedRole === "client"
-                      ? "bg-blue-600 hover:bg-blue-700 text-white"
-                      : ""
-                  }`}
-                  size="lg"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Entrando..." : "Entrar"}
-                </Button>
-              </form>
-
-              {/* Divider */}
-              <div className="relative my-8">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white text-gray-500">
-                    Ou continue com
-                  </span>
-                </div>
-              </div>
-
-              {/* Social Login */}
-              <div className="grid grid-cols-2 gap-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => console.log("Login com Google")}
-                  disabled={isLoading}
-                >
-                  <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                    <path
-                      fill="currentColor"
-                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                    />
-                    <path
-                      fill="currentColor"
-                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                    />
-                    <path
-                      fill="currentColor"
-                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                    />
-                    <path
-                      fill="currentColor"
-                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                    />
-                  </svg>
-                  Google
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => console.log("Login com Facebook")}
-                  disabled={isLoading}
-                >
-                  <svg
-                    className="w-5 h-5 mr-2"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                  </svg>
-                  Facebook
-                </Button>
-              </div>
-
-              {/* Sign Up Link */}
-              <div className="mt-8 text-center">
-                <p className="text-sm text-gray-600">
-                  Não tem uma conta?{" "}
-                  <button
-                    type="button"
-                    className={`font-semibold transition-colors ${
-                      selectedRole === "client"
-                        ? "text-blue-600 hover:text-blue-700"
-                        : "text-gold hover:text-gold-dark"
-                    }`}
-                    onClick={() => console.log("Ir para cadastro")}
-                  >
-                    Cadastre-se
-                  </button>
+          {/* Demo Credentials */}
+          <motion.div
+            key={selectedRole}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`${colors.bgLight} border ${colors.border}/30 rounded-xl p-3 mb-5`}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles className={`w-3.5 h-3.5 ${colors.text}`} />
+              <p className="text-xs font-medium text-gray-300">
+                Credenciais de demonstração ({currentRoleOption.title})
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <span className="text-gray-500">Email:</span>
+                <p className="text-white font-mono text-[11px] bg-black/30 px-2 py-1 rounded mt-0.5 truncate">
+                  {getCredentials().email}
                 </p>
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+              <div>
+                <span className="text-gray-500">Senha:</span>
+                <p className="text-white font-mono text-[11px] bg-black/30 px-2 py-1 rounded mt-0.5">
+                  {getCredentials().senha}
+                </p>
+              </div>
+            </div>
+          </motion.div>
 
-        {/* Footer */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-center text-sm text-gray-400 mt-8"
-        >
-          © 2024 BarberPro. Todos os direitos reservados.
-        </motion.p>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {errors.general && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl text-sm"
+              >
+                {errors.general}
+              </motion.div>
+            )}
+
+            {/* Email Field */}
+            <div className="space-y-1.5">
+              <Label htmlFor="email" className="text-sm font-medium text-gray-300">Email</Label>
+              <div className="relative">
+                <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${colors.text}`} />
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className={`
+                    w-full h-11 pl-12 pr-4 bg-white/5 border rounded-xl text-white placeholder-gray-500
+                    focus:outline-none focus:ring-2 transition-all
+                    ${errors.email ? "border-red-500/50 focus:ring-red-500/30" : `border-white/10 ${colors.ring}`}
+                  `}
+                />
+              </div>
+              {errors.email && (
+                <p className="text-xs text-red-400">{errors.email}</p>
+              )}
+            </div>
+
+            {/* Password Field */}
+            <div className="space-y-1.5">
+              <Label htmlFor="password" className="text-sm font-medium text-gray-300">Senha</Label>
+              <div className="relative">
+                <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${colors.text}`} />
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className={`
+                    w-full h-11 pl-12 pr-12 bg-white/5 border rounded-xl text-white placeholder-gray-500
+                    focus:outline-none focus:ring-2 transition-all
+                    ${errors.password ? "border-red-500/50 focus:ring-red-500/30" : `border-white/10 ${colors.ring}`}
+                  `}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="text-xs text-red-400">{errors.password}</p>
+              )}
+            </div>
+
+            {/* Remember Me & Forgot Password */}
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    name="rememberMe"
+                    checked={formData.rememberMe}
+                    onChange={handleChange}
+                    className="sr-only"
+                  />
+                  <div className={`w-5 h-5 border-2 border-white/20 rounded bg-white/5 transition-all flex items-center justify-center ${formData.rememberMe ? `${colors.bg} ${colors.border}` : ''}`}>
+                    {formData.rememberMe && (
+                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
+                </div>
+                <span className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors">Lembrar-me</span>
+              </label>
+              <button type="button" className={`text-sm ${colors.text} hover:opacity-80 transition-colors`}>
+                Esqueceu a senha?
+              </button>
+            </div>
+
+            {/* Submit Button */}
+            <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+              <Button
+                type="submit"
+                className={`w-full h-11 bg-gradient-to-r ${colors.primary} hover:opacity-90 text-white font-semibold rounded-xl shadow-lg ${colors.shadow} transition-all`}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Entrando...
+                  </div>
+                ) : (
+                  <>Entrar como {currentRoleOption.title}</>
+                )}
+              </Button>
+            </motion.div>
+          </form>
+
+          {/* Divider */}
+          <div className="relative my-5">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/10"></div>
+            </div>
+            <div className="relative flex justify-center">
+              <span className="px-4 bg-gray-800 text-gray-500 text-xs">Ou continue com</span>
+            </div>
+          </div>
+
+          {/* Social Login */}
+          <div className="grid grid-cols-2 gap-3">
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex items-center justify-center gap-2 h-10 bg-white/5 border border-white/10 rounded-lg text-white hover:bg-white/10 hover:border-white/20 transition-all text-sm"
+              disabled={isLoading}
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24">
+                <path fill="#EA4335" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#4285F4" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </svg>
+              Google
+            </motion.button>
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex items-center justify-center gap-2 h-10 bg-white/5 border border-white/10 rounded-lg text-white hover:bg-white/10 hover:border-white/20 transition-all text-sm"
+              disabled={isLoading}
+            >
+              <svg className="w-4 h-4 text-[#1877F2]" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+              Facebook
+            </motion.button>
+          </div>
+
+          {/* Sign Up Link */}
+          <div className="mt-5 text-center">
+            <p className="text-xs text-gray-500">
+              Não tem uma conta?{" "}
+              <button type="button" className={`font-semibold ${colors.text} hover:opacity-80 transition-colors`}>
+                Cadastre-se
+              </button>
+            </p>
+          </div>
+
+          {/* Footer */}
+          <div className="mt-6 text-center">
+            <p className="text-xs text-gray-600">© 2024 BarberPro. Todos os direitos reservados.</p>
+          </div>
+        </motion.div>
       </motion.div>
     </div>
   );

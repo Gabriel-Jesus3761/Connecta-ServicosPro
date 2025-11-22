@@ -8,6 +8,7 @@ interface PopoverProps {
   open?: boolean
   onOpenChange?: (open: boolean) => void
   align?: "start" | "center" | "end"
+  className?: string
 }
 
 export function Popover({
@@ -16,6 +17,7 @@ export function Popover({
   open: controlledOpen,
   onOpenChange,
   align = "start",
+  className,
 }: PopoverProps) {
   const [internalOpen, setInternalOpen] = React.useState(false)
   const popoverRef = React.useRef<HTMLDivElement>(null)
@@ -46,7 +48,7 @@ export function Popover({
   }
 
   return (
-    <div className="relative inline-block" ref={popoverRef}>
+    <div className={cn("relative", className)} ref={popoverRef}>
       <div onClick={() => setOpen(!open)}>{children}</div>
 
       <AnimatePresence>

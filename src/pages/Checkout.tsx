@@ -48,10 +48,15 @@ export function Checkout() {
 
   if (!bookingData) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Dados de agendamento não encontrados</h2>
-          <Button onClick={() => navigate('/')}>Voltar para início</Button>
+          <h2 className="text-2xl font-bold text-white mb-4">Dados de agendamento não encontrados</h2>
+          <Button
+            onClick={() => navigate('/')}
+            className="bg-gradient-to-r from-gold to-yellow-600 hover:from-yellow-600 hover:to-gold text-black font-semibold"
+          >
+            Voltar para início
+          </Button>
         </div>
       </div>
     )
@@ -63,10 +68,15 @@ export function Checkout() {
 
   if (!business || !service || !professional) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Erro ao carregar dados</h2>
-          <Button onClick={() => navigate('/')}>Voltar para início</Button>
+          <h2 className="text-2xl font-bold text-white mb-4">Erro ao carregar dados</h2>
+          <Button
+            onClick={() => navigate('/')}
+            className="bg-gradient-to-r from-gold to-yellow-600 hover:from-yellow-600 hover:to-gold text-black font-semibold"
+          >
+            Voltar para início
+          </Button>
         </div>
       </div>
     )
@@ -130,28 +140,35 @@ export function Checkout() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-black">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+      <motion.div
+        className="bg-black/80 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50"
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-4">
-            <button
+            <motion.button
               onClick={() => navigate(-1)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
+              <ArrowLeft className="w-5 h-5 text-white" />
+            </motion.button>
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-gray-900">Checkout</h1>
-              <p className="text-sm text-gray-600">Finalize seu agendamento</p>
+              <h1 className="text-2xl font-bold text-white">Checkout</h1>
+              <p className="text-sm text-gray-400">Finalize seu agendamento</p>
             </div>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Lock className="w-4 h-4" />
+            <div className="flex items-center gap-2 text-sm text-gray-400">
+              <Lock className="w-4 h-4 text-green-400" />
               <span>Pagamento Seguro</span>
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -162,17 +179,17 @@ export function Checkout() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <Card>
+              <Card className="bg-white/5 backdrop-blur-sm border-white/10">
                 <CardHeader>
-                  <CardTitle>Resumo da Reserva</CardTitle>
+                  <CardTitle className="text-white">Resumo da Reserva</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Business */}
-                  <div className="flex items-start gap-3 pb-4 border-b border-gray-100">
+                  <div className="flex items-start gap-3 pb-4 border-b border-white/10">
                     <Building2 className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
                     <div className="flex-1">
-                      <p className="font-semibold text-gray-900">{business.name}</p>
-                      <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+                      <p className="font-semibold text-white">{business.name}</p>
+                      <p className="text-sm text-gray-400 flex items-center gap-1 mt-1">
                         <MapPin className="w-3 h-3" />
                         {business.address.street}, {business.address.number} - {business.address.neighborhood}
                       </p>
@@ -180,13 +197,13 @@ export function Checkout() {
                   </div>
 
                   {/* Service */}
-                  <div className="flex items-start gap-3 pb-4 border-b border-gray-100">
+                  <div className="flex items-start gap-3 pb-4 border-b border-white/10">
                     <Scissors className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
                     <div className="flex-1">
-                      <p className="font-semibold text-gray-900">{service.name}</p>
-                      <p className="text-sm text-gray-600 mt-1">{service.description}</p>
+                      <p className="font-semibold text-white">{service.name}</p>
+                      <p className="text-sm text-gray-400 mt-1">{service.description}</p>
                       <div className="flex items-center gap-3 mt-2">
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-xs border-white/20 text-gray-400">
                           <Clock className="w-3 h-3 mr-1" />
                           {service.duration} min
                         </Badge>
@@ -195,11 +212,11 @@ export function Checkout() {
                   </div>
 
                   {/* Professional */}
-                  <div className="flex items-start gap-3 pb-4 border-b border-gray-100">
+                  <div className="flex items-start gap-3 pb-4 border-b border-white/10">
                     <User className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
                     <div className="flex-1">
-                      <p className="font-semibold text-gray-900">{professional.name}</p>
-                      <p className="text-sm text-gray-600">{professional.role}</p>
+                      <p className="font-semibold text-white">{professional.name}</p>
+                      <p className="text-sm text-gray-400">{professional.role}</p>
                     </div>
                   </div>
 
@@ -207,8 +224,8 @@ export function Checkout() {
                   <div className="flex items-start gap-3">
                     <Calendar className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
                     <div className="flex-1">
-                      <p className="font-semibold text-gray-900 capitalize">{formatDate(bookingData.date)}</p>
-                      <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+                      <p className="font-semibold text-white capitalize">{formatDate(bookingData.date)}</p>
+                      <p className="text-sm text-gray-400 flex items-center gap-1 mt-1">
                         <Clock className="w-3 h-3" />
                         {bookingData.time}
                       </p>
@@ -224,42 +241,47 @@ export function Checkout() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <Card>
+              <Card className="bg-white/5 backdrop-blur-sm border-white/10">
                 <CardHeader>
-                  <CardTitle>Forma de Pagamento</CardTitle>
+                  <CardTitle className="text-white">Forma de Pagamento</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    {paymentMethods.map((method) => {
+                    {paymentMethods.map((method, index) => {
                       const Icon = method.icon
                       const isSelected = selectedPaymentMethod === method.id
 
                       return (
-                        <button
+                        <motion.button
                           key={method.id}
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: index * 0.05 }}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
                           onClick={() => setSelectedPaymentMethod(method.id)}
                           className={`
                             p-4 rounded-lg border-2 transition-all text-left
                             ${
                               isSelected
-                                ? 'border-gold bg-gold/5'
-                                : 'border-gray-200 hover:border-gray-300'
+                                ? 'border-gold bg-gold/10'
+                                : 'border-white/10 hover:border-white/20 bg-white/5'
                             }
                           `}
                         >
                           <div className="flex items-start gap-3">
                             <Icon className={`w-6 h-6 ${isSelected ? 'text-gold' : 'text-gray-400'}`} />
                             <div className="flex-1">
-                              <p className={`font-semibold ${isSelected ? 'text-gold' : 'text-gray-900'}`}>
+                              <p className={`font-semibold ${isSelected ? 'text-gold' : 'text-white'}`}>
                                 {method.name}
                               </p>
-                              <p className="text-sm text-gray-600 mt-1">{method.description}</p>
+                              <p className="text-sm text-gray-400 mt-1">{method.description}</p>
                             </div>
                             {isSelected && (
                               <Check className="w-5 h-5 text-gold" />
                             )}
                           </div>
-                        </button>
+                        </motion.button>
                       )
                     })}
                   </div>
@@ -269,10 +291,10 @@ export function Checkout() {
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
-                      className="space-y-4 pt-4 border-t border-gray-200"
+                      className="space-y-4 pt-4 border-t border-white/10"
                     >
                       <div className="space-y-2">
-                        <Label htmlFor="cardNumber">Número do Cartão</Label>
+                        <Label htmlFor="cardNumber" className="text-gray-300">Número do Cartão</Label>
                         <Input
                           id="cardNumber"
                           placeholder="0000 0000 0000 0000"
@@ -283,22 +305,24 @@ export function Checkout() {
                             const formatted = value.match(/.{1,4}/g)?.join(' ') || value
                             setCardData({ ...cardData, number: formatted })
                           }}
+                          className="bg-white/5 border-white/10 text-white focus:ring-gold"
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="cardName">Nome no Cartão</Label>
+                        <Label htmlFor="cardName" className="text-gray-300">Nome no Cartão</Label>
                         <Input
                           id="cardName"
                           placeholder="Nome como está no cartão"
                           value={cardData.name}
                           onChange={(e) => setCardData({ ...cardData, name: e.target.value })}
+                          className="bg-white/5 border-white/10 text-white focus:ring-gold"
                         />
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="expiry">Validade</Label>
+                          <Label htmlFor="expiry" className="text-gray-300">Validade</Label>
                           <Input
                             id="expiry"
                             placeholder="MM/AA"
@@ -311,10 +335,11 @@ export function Checkout() {
                               }
                               setCardData({ ...cardData, expiry: value })
                             }}
+                            className="bg-white/5 border-white/10 text-white focus:ring-gold"
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="cvv">CVV</Label>
+                          <Label htmlFor="cvv" className="text-gray-300">CVV</Label>
                           <Input
                             id="cvv"
                             placeholder="123"
@@ -323,6 +348,7 @@ export function Checkout() {
                             onChange={(e) =>
                               setCardData({ ...cardData, cvv: e.target.value.replace(/\D/g, '') })
                             }
+                            className="bg-white/5 border-white/10 text-white focus:ring-gold"
                           />
                         </div>
                       </div>
@@ -334,10 +360,10 @@ export function Checkout() {
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
-                      className="pt-4 border-t border-gray-200"
+                      className="pt-4 border-t border-white/10"
                     >
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <p className="text-sm text-blue-900">
+                      <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+                        <p className="text-sm text-blue-400">
                           Após confirmar, você receberá um QR Code para realizar o pagamento via PIX.
                         </p>
                       </div>
@@ -349,10 +375,10 @@ export function Checkout() {
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
-                      className="pt-4 border-t border-gray-200"
+                      className="pt-4 border-t border-white/10"
                     >
-                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                        <p className="text-sm text-amber-900">
+                      <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
+                        <p className="text-sm text-amber-400">
                           Você pagará em dinheiro diretamente no estabelecimento no dia do agendamento.
                         </p>
                       </div>
@@ -370,38 +396,40 @@ export function Checkout() {
               animate={{ opacity: 1, x: 0 }}
               className="sticky top-24"
             >
-              <Card className="border-2 border-gold">
+              <Card className="bg-white/5 backdrop-blur-sm border-2 border-gold/50 shadow-2xl shadow-gold/10">
                 <CardHeader>
-                  <CardTitle>Resumo do Valor</CardTitle>
+                  <CardTitle className="text-white">Resumo do Valor</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-3">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">{service.name}</span>
-                      <span className="font-semibold">{formatCurrency(service.price)}</span>
+                      <span className="text-gray-400">{service.name}</span>
+                      <span className="font-semibold text-white">{formatCurrency(service.price)}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">Taxa de serviço</span>
-                      <span className="font-semibold text-green-600">Grátis</span>
+                      <span className="text-gray-400">Taxa de serviço</span>
+                      <span className="font-semibold text-green-400">Grátis</span>
                     </div>
                   </div>
 
-                  <div className="border-t border-gray-200 pt-4">
+                  <div className="border-t border-white/10 pt-4">
                     <div className="flex items-center justify-between mb-4">
-                      <span className="text-lg font-bold text-gray-900">Total</span>
-                      <span className="text-2xl font-bold text-gold">{formatCurrency(service.price)}</span>
+                      <span className="text-lg font-bold text-white">Total</span>
+                      <span className="text-2xl font-bold bg-gradient-to-r from-gold to-yellow-600 bg-clip-text text-transparent">{formatCurrency(service.price)}</span>
                     </div>
 
-                    <Button
-                      variant="default"
-                      size="lg"
-                      className="w-full bg-gold hover:bg-gold-dark"
-                      onClick={handlePayment}
-                      disabled={!selectedPaymentMethod}
-                    >
-                      <Check className="w-5 h-5 mr-2" />
-                      Confirmar Pagamento
-                    </Button>
+                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                      <Button
+                        variant="default"
+                        size="lg"
+                        className="w-full bg-gradient-to-r from-gold to-yellow-600 hover:from-yellow-600 hover:to-gold text-black font-semibold shadow-lg shadow-gold/20"
+                        onClick={handlePayment}
+                        disabled={!selectedPaymentMethod}
+                      >
+                        <Check className="w-5 h-5 mr-2" />
+                        Confirmar Pagamento
+                      </Button>
+                    </motion.div>
 
                     <p className="text-xs text-gray-500 text-center mt-3">
                       Ao confirmar, você concorda com nossos termos de serviço
@@ -409,9 +437,9 @@ export function Checkout() {
                   </div>
 
                   {/* Security Badge */}
-                  <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Lock className="w-4 h-4 text-green-600" />
+                  <div className="bg-white/5 rounded-lg p-3 border border-white/10">
+                    <div className="flex items-center gap-2 text-sm text-gray-400">
+                      <Lock className="w-4 h-4 text-green-400" />
                       <span>Pagamento 100% seguro</span>
                     </div>
                   </div>

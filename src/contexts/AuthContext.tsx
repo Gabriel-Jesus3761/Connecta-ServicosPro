@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-export type UserRole = 'owner' | 'client'
+export type UserRole = 'owner' | 'client' | 'professional'
 
 export interface User {
   id: string
@@ -9,6 +9,11 @@ export interface User {
   email: string
   role: UserRole
   avatar?: string
+  // Campos específicos para profissionais
+  phone?: string
+  pix?: string
+  specialties?: string[]
+  businesses?: string[] // IDs das empresas onde trabalha
 }
 
 interface AuthContextType {
@@ -57,6 +62,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         role: 'client' as UserRole,
         avatar: undefined,
       },
+      professional: {
+        id: '3',
+        name: 'Carlos Santos',
+        email: 'profissional@barberpro.com',
+        role: 'professional' as UserRole,
+        avatar: undefined,
+        phone: '(11) 98765-4321',
+        pix: 'profissional@barberpro.com',
+        specialties: ['Corte Masculino', 'Barba Completa', 'Design de Barba'],
+        businesses: ['1', '2'], // Trabalha em 2 empresas
+      },
     }
 
     // Validação simples de demonstração
@@ -70,6 +86,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('barberpro_user', JSON.stringify(demoUsers.client))
       // Cliente vai para a home para navegar
       navigate('/')
+    } else if (email === 'profissional@barberpro.com' && password === 'prof123' && role === 'professional') {
+      setUser(demoUsers.professional)
+      localStorage.setItem('barberpro_user', JSON.stringify(demoUsers.professional))
+      // Profissional vai para seu dashboard
+      navigate('/profissional')
     } else {
       throw new Error('Credenciais inválidas')
     }
