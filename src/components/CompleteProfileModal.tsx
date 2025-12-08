@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, AlertTriangle, CheckCircle, UserCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -32,6 +33,31 @@ export function CompleteProfileModal({
       onClose();
     }
   };
+
+  // Bloqueia o scroll quando o modal está aberto
+  useEffect(() => {
+    if (isOpen) {
+      // Salva a posição atual do scroll
+      const scrollY = window.scrollY;
+
+      // Adiciona estilos para bloquear o scroll
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+
+      return () => {
+        // Remove os estilos quando o modal fecha
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+
+        // Restaura a posição do scroll
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [isOpen]);
 
   return (
     <AnimatePresence>
