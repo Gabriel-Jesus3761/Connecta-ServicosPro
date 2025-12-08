@@ -1,6 +1,5 @@
-import { Fragment } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon, ExclamationTriangleIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, AlertTriangle, CheckCircle, UserCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useRequireCompleteProfile } from '../hooks/useRequireCompleteProfile';
 
@@ -35,145 +34,131 @@ export function CompleteProfileModal({
   };
 
   return (
-    <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={requireImmediate ? () => {} : onClose}>
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-black bg-opacity-25" />
-        </Transition.Child>
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={requireImmediate ? undefined : onClose}
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+          />
 
-        <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
-            >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                {/* Header */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0">
-                      <ExclamationTriangleIcon className="h-10 w-10 text-amber-500" />
-                    </div>
-                    <div>
-                      <Dialog.Title
-                        as="h3"
-                        className="text-lg font-medium leading-6 text-gray-900"
-                      >
-                        Complete seu perfil
-                      </Dialog.Title>
-                      <p className="text-sm text-gray-500 mt-1">
-                        {completeness}% completo
-                      </p>
-                    </div>
-                  </div>
-                  {!requireImmediate && (
-                    <button
-                      onClick={onClose}
-                      className="text-gray-400 hover:text-gray-500 transition-colors"
-                    >
-                      <XMarkIcon className="h-6 w-6" />
-                    </button>
-                  )}
+          {/* Modal */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="relative w-full max-w-md bg-gradient-to-br from-gray-900/95 via-gray-800/95 to-gray-900/95 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl overflow-hidden"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-white/10">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                  <AlertTriangle className="w-6 h-6 text-amber-500" />
                 </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">Complete seu perfil</h2>
+                  <p className="text-sm text-gray-400">{completeness}% completo</p>
+                </div>
+              </div>
+              {!requireImmediate && (
+                <button
+                  onClick={onClose}
+                  className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              )}
+            </div>
 
-                {/* Progress Bar */}
-                <div className="mb-4">
-                  <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div
-                      className="bg-primary-600 h-2.5 rounded-full transition-all duration-500"
-                      style={{ width: `${completeness}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {totalFilled} de {totalRequired} campos preenchidos
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              {/* Progress Bar */}
+              <div>
+                <div className="w-full bg-gray-700/50 rounded-full h-3 overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${completeness}%` }}
+                    transition={{ duration: 0.5, ease: 'easeOut' }}
+                    className="h-full bg-gradient-to-r from-amber-500 to-yellow-500 rounded-full"
+                  />
+                </div>
+                <p className="text-xs text-gray-400 mt-2">
+                  {totalFilled} de {totalRequired} campos preenchidos
+                </p>
+              </div>
+
+              {/* Message */}
+              <p className="text-sm text-gray-300">
+                {requireImmediate
+                  ? 'Para continuar, precisamos que você complete algumas informações do seu perfil.'
+                  : 'Para aproveitar melhor nossa plataforma, complete seu perfil com as informações abaixo:'}
+              </p>
+
+              {/* Missing Fields */}
+              <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4">
+                <p className="text-sm font-medium text-amber-400 mb-3">
+                  Campos necessários:
+                </p>
+                <ul className="space-y-2">
+                  {missingFieldsLabels.map((label, index) => (
+                    <li key={index} className="text-sm text-amber-300/90 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+                      {label}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Benefits */}
+              {!requireImmediate && (
+                <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4">
+                  <p className="text-sm font-medium text-green-400 mb-3 flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5" />
+                    Benefícios de completar seu perfil:
                   </p>
+                  <ul className="space-y-2">
+                    <li className="flex items-start gap-2 text-sm text-green-300/90">
+                      <span className="text-green-500 mt-0.5">✓</span>
+                      <span>Agendar serviços nas melhores barbearias</span>
+                    </li>
+                    <li className="flex items-start gap-2 text-sm text-green-300/90">
+                      <span className="text-green-500 mt-0.5">✓</span>
+                      <span>Receber ofertas e promoções exclusivas</span>
+                    </li>
+                    <li className="flex items-start gap-2 text-sm text-green-300/90">
+                      <span className="text-green-500 mt-0.5">✓</span>
+                      <span>Histórico completo de agendamentos</span>
+                    </li>
+                  </ul>
                 </div>
+              )}
+            </div>
 
-                {/* Message */}
-                <div className="mt-4">
-                  <p className="text-sm text-gray-600">
-                    {requireImmediate
-                      ? 'Para continuar, precisamos que você complete algumas informações do seu perfil.'
-                      : 'Para aproveitar melhor nossa plataforma, complete seu perfil com as informações abaixo:'}
-                  </p>
-
-                  {/* Missing Fields */}
-                  <div className="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3">
-                    <p className="text-sm font-medium text-amber-800 mb-2">
-                      Campos necessários:
-                    </p>
-                    <ul className="space-y-1">
-                      {missingFieldsLabels.map((label, index) => (
-                        <li key={index} className="text-sm text-amber-700 flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
-                          {label}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Benefits */}
-                  {!requireImmediate && (
-                    <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-3">
-                      <p className="text-sm font-medium text-green-800 mb-2 flex items-center gap-2">
-                        <CheckCircleIcon className="h-5 w-5" />
-                        Benefícios de completar seu perfil:
-                      </p>
-                      <ul className="space-y-1 text-sm text-green-700">
-                        <li className="flex items-start gap-2">
-                          <span className="text-green-500 mt-0.5">✓</span>
-                          <span>Agendar serviços nas melhores barbearias</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="text-green-500 mt-0.5">✓</span>
-                          <span>Receber ofertas e promoções exclusivas</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="text-green-500 mt-0.5">✓</span>
-                          <span>Histórico completo de agendamentos</span>
-                        </li>
-                      </ul>
-                    </div>
-                  )}
-                </div>
-
-                {/* Actions */}
-                <div className="mt-6 flex gap-3">
-                  <button
-                    type="button"
-                    className="flex-1 inline-flex justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 transition-colors"
-                    onClick={handleCompleteNow}
-                  >
-                    Completar agora
-                  </button>
-                  {!requireImmediate && (
-                    <button
-                      type="button"
-                      className="flex-1 inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2 transition-colors"
-                      onClick={handleCompleteLater}
-                    >
-                      Fazer depois
-                    </button>
-                  )}
-                </div>
-              </Dialog.Panel>
-            </Transition.Child>
-          </div>
+            {/* Actions */}
+            <div className="p-6 pt-0 flex gap-3">
+              <button
+                onClick={handleCompleteNow}
+                className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-600 hover:opacity-90 text-white font-medium transition-opacity flex items-center justify-center gap-2"
+              >
+                <UserCircle className="w-5 h-5" />
+                Completar agora
+              </button>
+              {!requireImmediate && (
+                <button
+                  onClick={handleCompleteLater}
+                  className="flex-1 px-4 py-3 rounded-xl border border-white/10 text-white hover:bg-white/5 font-medium transition-colors"
+                >
+                  Fazer depois
+                </button>
+              )}
+            </div>
+          </motion.div>
         </div>
-      </Dialog>
-    </Transition>
+      )}
+    </AnimatePresence>
   );
 }
