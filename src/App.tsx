@@ -26,6 +26,7 @@ import { ProfissionalDashboard } from './pages/ProfissionalDashboard'
 import { ProfissionalPerfil } from './pages/ProfissionalPerfil'
 import { ProfissionalAssociarBarbearia } from './pages/ProfissionalAssociarBarbearia'
 import { Perfil } from './pages/Perfil'
+import { CompleteProfile } from './pages/CompleteProfile'
 import { ConfiguracoesEstabelecimento } from './pages/ConfiguracoesEstabelecimento'
 import { EntradaDespesas } from './pages/EntradaDespesas'
 
@@ -42,6 +43,7 @@ function App() {
           <Route element={<AppLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/perfil" element={<Perfil />} />
+            <Route path="/profile/complete" element={<CompleteProfile />} />
             <Route path="/categorias/:categoryId" element={<EmpresasPorCategoria />} />
             <Route path="/empresas/:businessId" element={<EmpresaDetalhes />} />
             <Route path="/checkout" element={<Checkout />} />

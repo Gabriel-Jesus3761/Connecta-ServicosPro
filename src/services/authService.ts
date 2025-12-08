@@ -32,6 +32,10 @@ export interface UserProfile {
   birthDate?: string;
   createdAt: any;
   updatedAt: any;
+  // Campos de completude do perfil
+  profileComplete?: boolean; // Se o perfil está completo
+  missingFields?: string[]; // Lista de campos faltantes
+  profileCompleteness?: number; // Porcentagem de completude (0-100)
   // Informações adicionais do Google/Facebook
   firstName?: string; // Nome
   lastName?: string; // Sobrenome
@@ -501,6 +505,10 @@ export async function loginWithGoogle(role: UserRole = 'client'): Promise<UserPr
           activeRole: role,
           createdAt: new Date(),
           updatedAt: new Date(),
+          // Novos usuários de login social não têm perfil completo
+          profileComplete: false,
+          missingFields: ['phone', 'cpf', 'gender', 'birthDate'],
+          profileCompleteness: 25, // Tem apenas nome e email (2 de 6 campos = ~33%, mas arredondamos para 25)
         } as any;
         console.log('[loginWithGoogle] Profile construído:', profile);
       } else {

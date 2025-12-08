@@ -27,6 +27,10 @@ export interface User {
   cpf?: string
   gender?: string
   birthDate?: string
+  // Campos de completude do perfil
+  profileComplete?: boolean
+  missingFields?: string[]
+  profileCompleteness?: number
 }
 
 interface AuthContextType {
@@ -58,6 +62,9 @@ function profileToUser(profile: UserProfile): User {
     cpf: profile.cpf,
     gender: profile.gender,
     birthDate: profile.birthDate,
+    profileComplete: profile.profileComplete,
+    missingFields: profile.missingFields,
+    profileCompleteness: profile.profileCompleteness,
   }
 }
 
