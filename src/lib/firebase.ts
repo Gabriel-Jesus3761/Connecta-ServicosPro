@@ -1,6 +1,6 @@
 // Firebase Configuration
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
@@ -23,6 +23,16 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+
+// Configurar persistência de autenticação
+setPersistence(auth, browserLocalPersistence).catch((error) => {
+  console.error('Erro ao configurar persistência de autenticação:', error);
+});
+
+// Log de estado de autenticação para debug
+onAuthStateChanged(auth, (user) => {
+  console.log('[Firebase] onAuthStateChanged:', user ? `User ${user.uid}` : 'No user');
+});
 
 // NÃO conectar ao emulador a menos que explicitamente configurado
 // connectFirestoreEmulator(db, 'localhost', 8080);

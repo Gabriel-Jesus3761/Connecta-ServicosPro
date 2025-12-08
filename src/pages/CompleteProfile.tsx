@@ -2,19 +2,29 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../lib/firebase';
-import { User, Phone, Cake, CreditCard, CheckCircle, AlertCircle, UserCircle, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { db, auth } from '@/lib/firebase';
+import { User, Phone, Cake, CreditCard, CheckCircle, AlertCircle, UserCircle, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
 import { getProfileCompletenessInfo } from '../utils/profileValidation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getCountries, getCountryCallingCode } from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
+import en from 'react-phone-number-input/locale/en';
+import flags from 'react-phone-number-input/flags';
 
 export function CompleteProfile() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [showBirthDateCalendar, setShowBirthDateCalendar] = useState(false);
   const birthDateRef = useRef<HTMLDivElement>(null);
   const [birthDateInput, setBirthDateInput] = useState("");
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+
+  // Estados para seletor de país
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const [countrySearch, setCountrySearch] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("BR");
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const [formData, setFormData] = useState({
     displayName: user?.displayName || '',
@@ -30,7 +40,20 @@ export function CompleteProfile() {
 
   const completenessInfo = user ? getProfileCompletenessInfo(user as any) : null;
 
-  // Close calendar when clicking outside
+  // Lista de países filtrados
+  const allCountries = getCountries();
+  const filteredCountries = allCountries.filter((country) => {
+    const countryName = en[country as keyof typeof en] || country;
+    const countryCode = getCountryCallingCode(country as any);
+    const searchTerm = countrySearch.toLowerCase();
+    return (
+      countryName.toLowerCase().includes(searchTerm) ||
+      countryCode.includes(searchTerm) ||
+      country.toLowerCase().includes(searchTerm)
+    );
+  });
+
+  // Close calendar and dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -39,16 +62,24 @@ export function CompleteProfile() {
       ) {
         setShowBirthDateCalendar(false);
       }
+
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowCountryDropdown(false);
+        setCountrySearch("");
+      }
     };
 
-    if (showBirthDateCalendar) {
+    if (showBirthDateCalendar || showCountryDropdown) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showBirthDateCalendar]);
+  }, [showBirthDateCalendar, showCountryDropdown]);
 
   // Sync birthDate with input
   useEffect(() => {
@@ -96,26 +127,9 @@ export function CompleteProfile() {
     return `${limited.slice(0, 3)}.${limited.slice(3, 6)}.${limited.slice(6, 9)}-${limited.slice(9)}`;
   };
 
-  const formatPhone = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
-    const limited = numbers.slice(0, 11);
-
-    if (limited.length <= 2) return limited;
-    if (limited.length <= 7) return `(${limited.slice(0, 2)}) ${limited.slice(2)}`;
-    if (limited.length <= 10)
-      return `(${limited.slice(0, 2)}) ${limited.slice(2, 6)}-${limited.slice(6)}`;
-    return `(${limited.slice(0, 2)}) ${limited.slice(2, 7)}-${limited.slice(7)}`;
-  };
-
   const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatCPF(e.target.value);
     setFormData(prev => ({ ...prev, cpf: formatted }));
-    setError('');
-  };
-
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhone(e.target.value);
-    setFormData(prev => ({ ...prev, phone: formatted }));
     setError('');
   };
 
@@ -177,6 +191,23 @@ export function CompleteProfile() {
     }
   };
 
+  const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedMonth(parseInt(e.target.value));
+  };
+
+  const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedYear(parseInt(e.target.value));
+  };
+
+  const generateYears = () => {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    for (let year = currentYear - 13; year >= currentYear - 100; year--) {
+      years.push(year);
+    }
+    return years;
+  };
+
   const validateForm = (): boolean => {
     if (!formData.displayName || formData.displayName.trim().length < 3) {
       setError('Nome completo deve ter pelo menos 3 caracteres');
@@ -232,9 +263,50 @@ export function CompleteProfile() {
     setError('');
 
     try {
-      const userRef = doc(db, 'users', user.uid);
+      console.log('👤 Usuário do contexto:', user);
+      console.log('🔑 UID do usuário:', user.uid);
 
-      await updateDoc(userRef, {
+      // Verificar se o usuário está autenticado e aguardar sincronização se necessário
+      let currentUser = auth.currentUser;
+      console.log('🔐 Firebase Auth currentUser (inicial):', currentUser);
+
+      if (!currentUser) {
+        console.log('⏳ currentUser é null, aguardando sincronização...');
+        // Aguardar até 5 segundos pela sincronização
+        await new Promise<void>((resolve) => {
+          const timeoutId = setTimeout(() => {
+            console.warn('⚠️ Timeout aguardando sincronização');
+            unsubscribe();
+            resolve();
+          }, 5000);
+
+          const unsubscribe = auth.onAuthStateChanged((user) => {
+            if (user) {
+              currentUser = user;
+              console.log('✅ Firebase Auth sincronizado!', user.uid);
+              clearTimeout(timeoutId);
+              unsubscribe();
+              resolve();
+            }
+          });
+        });
+      }
+
+      if (currentUser) {
+        try {
+          const token = await currentUser.getIdToken();
+          console.log('🎫 Token obtido (primeiros 50 caracteres):', token.substring(0, 50));
+        } catch (tokenError) {
+          console.error('❌ Erro ao obter token:', tokenError);
+        }
+      } else {
+        throw new Error('Não foi possível autenticar. Por favor, faça login novamente.');
+      }
+
+      const userRef = doc(db, 'users', user.uid);
+      console.log('📄 Referência do documento:', userRef.path);
+
+      const updateData = {
         displayName: formData.displayName.trim(),
         phone: formData.phone,
         cpf: formData.cpf.replace(/\D/g, ''),
@@ -242,7 +314,14 @@ export function CompleteProfile() {
         birthDate: formData.birthDate,
         profileComplete: true,
         updatedAt: serverTimestamp(),
-      });
+      };
+      console.log('📝 Dados a serem atualizados:', updateData);
+
+      await updateDoc(userRef, updateData);
+      console.log('✅ Documento atualizado com sucesso');
+
+      // Atualiza os dados do usuário no contexto
+      await refreshUser();
 
       setSuccess(true);
 
@@ -250,7 +329,9 @@ export function CompleteProfile() {
         navigate('/');
       }, 1500);
     } catch (err: any) {
-      console.error('Erro ao atualizar perfil:', err);
+      console.error('❌ Erro ao atualizar perfil:', err);
+      console.error('❌ Código do erro:', err.code);
+      console.error('❌ Mensagem do erro:', err.message);
       setError(err.message || 'Erro ao atualizar perfil. Tente novamente.');
     } finally {
       setIsLoading(false);
@@ -392,35 +473,174 @@ export function CompleteProfile() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
+              ref={dropdownRef}
+              style={{ position: 'relative', zIndex: 20 }}
             >
               <label htmlFor="phone" className="block text-sm font-medium text-gray-300">
                 Telefone *
               </label>
-              <div className="relative group">
-                <div className="pointer-events-none">
-                  <Phone className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-all duration-300 z-10 ${formData.phone ? colors.text : 'text-gray-500'}`} />
+              <div className="flex gap-2">
+                {/* Country Selector Button */}
+                <button
+                  type="button"
+                  onClick={() => setShowCountryDropdown(!showCountryDropdown)}
+                  className="flex items-center gap-2 px-3 h-11 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:border-amber-500/30 transition-all"
+                >
+                  <div className="w-6 h-6 flex items-center justify-center">
+                    {(() => {
+                      const Flag = flags[selectedCountry as keyof typeof flags];
+                      return Flag ? <Flag title={en[selectedCountry as keyof typeof en]} /> : null;
+                    })()}
+                  </div>
+                  <span className="text-white text-sm font-medium">
+                    +{getCountryCallingCode(selectedCountry as any)}
+                  </span>
+                  <svg
+                    className={`w-4 h-4 text-gray-400 transition-transform ${showCountryDropdown ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {/* Phone Number Input */}
+                <div className="relative flex-1 group">
+                  <div className="pointer-events-none">
+                    <Phone className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-all duration-300 z-10 ${formData.phone ? colors.text : 'text-gray-500'}`} />
+                  </div>
+                  <input
+                    type="tel"
+                    placeholder={
+                      selectedCountry === "BR"
+                        ? "(00) 00000-0000"
+                        : selectedCountry === "US"
+                        ? "(000) 000-0000"
+                        : "Phone number"
+                    }
+                    value={(() => {
+                      if (!formData.phone) return "";
+                      const countryCode = getCountryCallingCode(selectedCountry as any);
+                      const digitsOnly = formData.phone.replace(/\D/g, '').replace(countryCode, '');
+                      if (!digitsOnly) return "";
+
+                      if (selectedCountry === "BR") {
+                        if (digitsOnly.length <= 2) return `(${digitsOnly}`;
+                        if (digitsOnly.length <= 7) return `(${digitsOnly.substring(0, 2)}) ${digitsOnly.substring(2)}`;
+                        return `(${digitsOnly.substring(0, 2)}) ${digitsOnly.substring(2, 7)}-${digitsOnly.substring(7)}`;
+                      } else if (selectedCountry === "US") {
+                        if (digitsOnly.length <= 3) return `(${digitsOnly}`;
+                        if (digitsOnly.length <= 6) return `(${digitsOnly.substring(0, 3)}) ${digitsOnly.substring(3)}`;
+                        return `(${digitsOnly.substring(0, 3)}) ${digitsOnly.substring(3, 6)}-${digitsOnly.substring(6, 10)}`;
+                      }
+                      return digitsOnly;
+                    })()}
+                    onChange={(e) => {
+                      const inputValue = e.target.value;
+                      const digitsOnly = inputValue.replace(/\D/g, '');
+                      if (!digitsOnly) {
+                        setFormData(prev => ({ ...prev, phone: '' }));
+                        return;
+                      }
+                      const countryCode = getCountryCallingCode(selectedCountry as any);
+                      const fullPhone = `+${countryCode}${digitsOnly}`;
+                      setFormData(prev => ({ ...prev, phone: fullPhone }));
+                      setError('');
+                    }}
+                    style={{
+                      backgroundColor: 'transparent',
+                      WebkitBoxShadow: '0 0 0 1000px transparent inset'
+                    }}
+                    className={`w-full h-11 pl-12 pr-4 bg-transparent border rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 transition-all duration-300 border-white/10 ${colors.ring}`}
+                    required
+                  />
+                  <motion.div
+                    className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r ${colors.primary}`}
+                    initial={{ width: 0 }}
+                    animate={{ width: formData.phone ? "100%" : 0 }}
+                    transition={{ duration: 0.3 }}
+                  />
                 </div>
-                <input
-                  type="tel"
-                  name="phone"
-                  id="phone"
-                  value={formData.phone}
-                  onChange={handlePhoneChange}
-                  style={{
-                    backgroundColor: 'transparent',
-                    WebkitBoxShadow: '0 0 0 1000px transparent inset'
-                  }}
-                  className={`w-full h-11 pl-12 pr-4 bg-transparent border rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 transition-all duration-300 border-white/10 ${colors.ring}`}
-                  placeholder="(00) 00000-0000"
-                  required
-                />
-                <motion.div
-                  className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r ${colors.primary}`}
-                  initial={{ width: 0 }}
-                  animate={{ width: formData.phone ? "100%" : 0 }}
-                  transition={{ duration: 0.3 }}
-                />
               </div>
+
+              {/* Country Dropdown */}
+              <AnimatePresence>
+                {showCountryDropdown && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute top-full mt-2 left-0 right-0 bg-gray-800 border border-white/10 rounded-xl shadow-2xl z-50 max-h-80 overflow-hidden"
+                  >
+                    {/* Search */}
+                    <div className="p-3 border-b border-white/10">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input
+                          type="text"
+                          placeholder="Buscar país..."
+                          value={countrySearch}
+                          onChange={(e) => setCountrySearch(e.target.value)}
+                          className="w-full h-10 pl-10 pr-10 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50 text-sm"
+                          autoFocus
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        {countrySearch && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCountrySearch("");
+                            }}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Countries List */}
+                    <div className="overflow-y-auto max-h-64">
+                      {filteredCountries.length > 0 ? (
+                        filteredCountries.map((country) => {
+                          const Flag = flags[country as keyof typeof flags];
+                          const countryName = en[country as keyof typeof en] || country;
+                          return (
+                            <div
+                              key={country}
+                              onClick={() => {
+                                setSelectedCountry(country);
+                                const currentNumber = formData.phone.replace(/^\+\d+/, '');
+                                const newFullPhone = `+${getCountryCallingCode(country as any)}${currentNumber}`;
+                                setFormData(prev => ({ ...prev, phone: newFullPhone }));
+                                setShowCountryDropdown(false);
+                                setCountrySearch("");
+                              }}
+                              className={`flex items-center gap-3 px-4 py-3 hover:bg-white/10 cursor-pointer transition-colors ${
+                                selectedCountry === country ? 'bg-amber-500/10' : ''
+                              }`}
+                            >
+                              <div className="w-7 h-7 flex items-center justify-center flex-shrink-0">
+                                {Flag && <Flag title={countryName} />}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <span className="text-white text-sm">{countryName}</span>
+                              </div>
+                              <span className="text-gray-400 text-sm">+{getCountryCallingCode(country as any)}</span>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div className="p-8 text-center text-gray-400 text-sm">
+                          Nenhum país encontrado
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
 
             {/* CPF */}
@@ -443,6 +663,7 @@ export function CompleteProfile() {
                   id="cpf"
                   value={formData.cpf}
                   onChange={handleCPFChange}
+                  autoComplete="off"
                   style={{
                     backgroundColor: 'transparent',
                     WebkitBoxShadow: '0 0 0 1000px transparent inset'
@@ -488,7 +709,6 @@ export function CompleteProfile() {
                     <option value="male" className="bg-gray-800">Masculino</option>
                     <option value="female" className="bg-gray-800">Feminino</option>
                     <option value="other" className="bg-gray-800">Outro</option>
-                    <option value="prefer-not-to-say" className="bg-gray-800">Prefiro não dizer</option>
                   </select>
                   <motion.div
                     className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r ${colors.primary}`}
@@ -546,37 +766,65 @@ export function CompleteProfile() {
                   <AnimatePresence>
                     {showBirthDateCalendar && (
                       <motion.div
-                        initial={{ opacity: 0, y: -10 }}
+                        initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="absolute top-full mt-2 left-0 right-0 bg-gray-800 border border-white/10 rounded-xl p-4 shadow-2xl z-50"
+                        exit={{ opacity: 0, y: 10 }}
+                        className="absolute bottom-full mb-2 left-0 right-0 bg-gray-800 border border-white/10 rounded-xl p-4 shadow-2xl z-50"
                       >
                         {/* Calendar Header */}
-                        <div className="flex items-center justify-between mb-4">
-                          <button
-                            type="button"
-                            onClick={handlePrevMonth}
-                            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                          >
-                            <ChevronLeft className="w-5 h-5 text-gray-400" />
-                          </button>
-                          <div className="text-center">
-                            <div className="text-white font-medium">
-                              {monthNames[selectedMonth]} {selectedYear}
-                            </div>
+                        <div className="space-y-3 mb-4">
+                          {/* Seletores de Mês e Ano */}
+                          <div className="flex gap-2">
+                            <select
+                              value={selectedMonth}
+                              onChange={handleMonthChange}
+                              className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm font-medium cursor-pointer hover:bg-white/10 hover:border-amber-500/30 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50 transition-all"
+                            >
+                              {monthNames.map((month, index) => (
+                                <option key={index} value={index} className="bg-gray-800">
+                                  {month}
+                                </option>
+                              ))}
+                            </select>
+
+                            <select
+                              value={selectedYear}
+                              onChange={handleYearChange}
+                              className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm font-medium cursor-pointer hover:bg-white/10 hover:border-amber-500/30 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50 transition-all"
+                            >
+                              {generateYears().map((year) => (
+                                <option key={year} value={year} className="bg-gray-800">
+                                  {year}
+                                </option>
+                              ))}
+                            </select>
                           </div>
-                          <button
-                            type="button"
-                            onClick={handleNextMonth}
-                            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                            disabled={
-                              selectedYear > maxDate.getFullYear() ||
-                              (selectedYear === maxDate.getFullYear() &&
-                                selectedMonth >= maxDate.getMonth())
-                            }
-                          >
-                            <ChevronRight className="w-5 h-5 text-gray-400" />
-                          </button>
+
+                          {/* Navegação com Setas */}
+                          <div className="flex items-center justify-between">
+                            <button
+                              type="button"
+                              onClick={handlePrevMonth}
+                              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                            >
+                              <ChevronLeft className="w-5 h-5 text-gray-400" />
+                            </button>
+                            <span className="text-gray-400 text-sm">
+                              {monthNames[selectedMonth]} {selectedYear}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={handleNextMonth}
+                              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                              disabled={
+                                selectedYear > maxDate.getFullYear() ||
+                                (selectedYear === maxDate.getFullYear() &&
+                                  selectedMonth >= maxDate.getMonth())
+                              }
+                            >
+                              <ChevronRight className="w-5 h-5 text-gray-400" />
+                            </button>
+                          </div>
                         </div>
 
                         {/* Calendar Grid */}

@@ -449,6 +449,25 @@ export async function loginWithGoogle(role: UserRole = 'client'): Promise<UserPr
         // Guarda o user para tentativas futuras
         cachedUser = user;
 
+        // IMPORTANTE: Aguardar a sincronização do estado de autenticação
+        console.log('[loginWithGoogle] Aguardando sincronização do Firebase Auth...');
+        await new Promise<void>((resolve) => {
+          const timeoutId = setTimeout(() => {
+            console.warn('[loginWithGoogle] Timeout ao aguardar sincronização, continuando mesmo assim');
+            unsubscribe();
+            resolve();
+          }, 5000);
+
+          const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            if (currentUser && currentUser.uid === user.uid) {
+              console.log('[loginWithGoogle] Firebase Auth sincronizado!');
+              clearTimeout(timeoutId);
+              unsubscribe();
+              resolve();
+            }
+          });
+        });
+
         // IMPORTANTE: A foto vem direto do user.photoURL (Firebase já processa)
         if (user.photoURL) {
           additionalUserInfo.photoURL = user.photoURL;

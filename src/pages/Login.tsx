@@ -13,6 +13,8 @@ export function Login() {
   const [searchParams] = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [selectedRole, setSelectedRole] = useState<UserRole>("client");
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isFacebookLoading, setIsFacebookLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -184,6 +186,61 @@ export function Login() {
           transition: background-color 5000s ease-in-out 0s;
         }
       `}</style>
+
+      {/* Loading Overlay para Login Social */}
+      <AnimatePresence>
+        {(isGoogleLoading || isFacebookLoading) && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="bg-gradient-to-br from-gray-900/90 via-gray-800/90 to-gray-900/90 backdrop-blur-xl rounded-2xl border border-white/10 p-8 flex flex-col items-center gap-4 shadow-2xl"
+            >
+              {/* Spinner animado com as cores do provedor */}
+              <motion.div
+                className={`w-16 h-16 rounded-full border-4 ${
+                  isGoogleLoading
+                    ? 'border-blue-500/30 border-t-blue-500'
+                    : 'border-[#1877F2]/30 border-t-[#1877F2]'
+                }`}
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              />
+
+              {/* Texto de carregamento */}
+              <div className="text-center">
+                <p className="text-white font-semibold text-lg mb-1">
+                  {isGoogleLoading ? 'Conectando com Google' : 'Conectando com Facebook'}
+                </p>
+                <p className="text-gray-400 text-sm">
+                  Aguarde enquanto processamos seu login...
+                </p>
+              </div>
+
+              {/* Barra de progresso animada */}
+              <div className="w-64 h-1 bg-white/10 rounded-full overflow-hidden">
+                <motion.div
+                  className={`h-full ${
+                    isGoogleLoading
+                      ? 'bg-gradient-to-r from-blue-500 via-red-500 to-yellow-500'
+                      : 'bg-[#1877F2]'
+                  }`}
+                  animate={{ x: ["-100%", "100%"] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Background Effects */}
       <div className="absolute inset-0">
@@ -705,6 +762,7 @@ export function Login() {
               type="button"
               onClick={async () => {
                 console.log('🔵 [Login.tsx] Botão Google clicado. Role selecionado:', selectedRole);
+                setIsGoogleLoading(true);
                 try {
                   console.log('📞 [Login.tsx] Chamando loginWithGoogle do AuthContext...');
                   await loginWithGoogle(selectedRole);
@@ -716,39 +774,65 @@ export function Login() {
                     ...prev,
                     general: error.message || "Erro ao fazer login com Google",
                   }));
+                  setIsGoogleLoading(false);
                 }
               }}
-              whileHover={{ scale: 1.03, y: -2 }}
-              whileTap={{ scale: 0.97 }}
-              className="flex items-center justify-center gap-2 h-10 bg-white/5 border border-white/10 rounded-lg text-white hover:bg-white/10 hover:border-white/20 transition-all text-sm relative overflow-hidden group"
-              disabled={isLoading}
+              whileHover={{ scale: isGoogleLoading ? 1 : 1.03, y: isGoogleLoading ? 0 : -2 }}
+              whileTap={{ scale: isGoogleLoading ? 1 : 0.97 }}
+              className="flex items-center justify-center gap-2 h-10 bg-white/5 border border-white/10 rounded-lg text-white hover:bg-white/10 hover:border-white/20 transition-all text-sm relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isLoading || isGoogleLoading || isFacebookLoading}
             >
               {/* Efeito de onda no hover */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"
-                initial={{ x: "-100%" }}
-                whileHover={{ x: "100%" }}
-                transition={{ duration: 0.5 }}
-              />
+              {!isGoogleLoading && (
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"
+                  initial={{ x: "-100%" }}
+                  whileHover={{ x: "100%" }}
+                  transition={{ duration: 0.5 }}
+                />
+              )}
 
-              <motion.svg
-                className="w-4 h-4 relative z-10"
-                viewBox="0 0 24 24"
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.5 }}
-              >
-                <path fill="#EA4335" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="#4285F4" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-              </motion.svg>
-              <span className="relative z-10">Google</span>
+              {/* Spinner de carregamento */}
+              {isGoogleLoading && (
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-red-500/20 to-yellow-500/20"
+                  animate={{ x: ["-100%", "100%"] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                />
+              )}
+
+              {isGoogleLoading ? (
+                <>
+                  <motion.div
+                    className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full relative z-10"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  />
+                  <span className="relative z-10">Conectando...</span>
+                </>
+              ) : (
+                <>
+                  <motion.svg
+                    className="w-4 h-4 relative z-10"
+                    viewBox="0 0 24 24"
+                    whileHover={{ rotate: 360 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <path fill="#EA4335" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#4285F4" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  </motion.svg>
+                  <span className="relative z-10">Google</span>
+                </>
+              )}
             </motion.button>
 
             <motion.button
               type="button"
               onClick={async () => {
                 console.log('🔵 [Login.tsx] Botão Facebook clicado. Role selecionado:', selectedRole);
+                setIsFacebookLoading(true);
                 try {
                   console.log('📞 [Login.tsx] Chamando loginWithFacebook do AuthContext...');
                   await loginWithFacebook(selectedRole);
@@ -760,31 +844,56 @@ export function Login() {
                     ...prev,
                     general: error.message || "Erro ao fazer login com Facebook",
                   }));
+                  setIsFacebookLoading(false);
                 }
               }}
-              whileHover={{ scale: 1.03, y: -2 }}
-              whileTap={{ scale: 0.97 }}
-              className="flex items-center justify-center gap-2 h-10 bg-white/5 border border-white/10 rounded-lg text-white hover:bg-white/10 hover:border-white/20 transition-all text-sm relative overflow-hidden group"
-              disabled={isLoading}
+              whileHover={{ scale: isFacebookLoading ? 1 : 1.03, y: isFacebookLoading ? 0 : -2 }}
+              whileTap={{ scale: isFacebookLoading ? 1 : 0.97 }}
+              className="flex items-center justify-center gap-2 h-10 bg-white/5 border border-white/10 rounded-lg text-white hover:bg-white/10 hover:border-white/20 transition-all text-sm relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isLoading || isGoogleLoading || isFacebookLoading}
             >
               {/* Efeito de onda no hover */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"
-                initial={{ x: "-100%" }}
-                whileHover={{ x: "100%" }}
-                transition={{ duration: 0.5 }}
-              />
+              {!isFacebookLoading && (
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"
+                  initial={{ x: "-100%" }}
+                  whileHover={{ x: "100%" }}
+                  transition={{ duration: 0.5 }}
+                />
+              )}
 
-              <motion.svg
-                className="w-4 h-4 text-[#1877F2] relative z-10"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.5 }}
-              >
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-              </motion.svg>
-              <span className="relative z-10">Facebook</span>
+              {/* Spinner de carregamento */}
+              {isFacebookLoading && (
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-[#1877F2]/20 via-[#1877F2]/30 to-[#1877F2]/20"
+                  animate={{ x: ["-100%", "100%"] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                />
+              )}
+
+              {isFacebookLoading ? (
+                <>
+                  <motion.div
+                    className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full relative z-10"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  />
+                  <span className="relative z-10">Conectando...</span>
+                </>
+              ) : (
+                <>
+                  <motion.svg
+                    className="w-4 h-4 text-[#1877F2] relative z-10"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                    whileHover={{ rotate: 360 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </motion.svg>
+                  <span className="relative z-10">Facebook</span>
+                </>
+              )}
             </motion.button>
           </motion.div>
 

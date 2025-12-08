@@ -48,6 +48,7 @@ interface AuthContextType {
   switchRole: (newRole: UserRole) => Promise<void>
   addRole: (newRole: UserRole, cnpj?: string) => Promise<void>
   hasRole: (role: UserRole) => boolean
+  refreshUser: () => Promise<void>
   isLoading: boolean
 }
 
@@ -298,6 +299,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return user?.roles.includes(role) || false
   }
 
+  // Atualiza os dados do usuário
+  const refreshUser = async () => {
+    if (!user) return
+
+    try {
+      const updatedProfile = await getUserProfile(user.id)
+      if (updatedProfile) {
+        setUser(profileToUser(updatedProfile))
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar dados do usuário:', error)
+    }
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -310,6 +325,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         switchRole,
         addRole,
         hasRole,
+        refreshUser,
         isLoading,
       }}
     >
