@@ -99,7 +99,7 @@ facebookProvider.addScope('user_gender');
 
 /**
  * Cria um perfil de usuário no Firestore (coleção users)
- * SOLUÇÃO TEMPORÁRIA: Usando Cloud Function devido a problemas de conectividade com Firestore do cliente
+ * Cria diretamente no Firestore em vez de usar Cloud Function para evitar perda de sessão
  */
 async function createUserProfile(
   user: FirebaseUser,
@@ -107,21 +107,30 @@ async function createUserProfile(
   additionalData?: any
 ): Promise<void> {
   try {
+    console.log('[createUserProfile] Criando perfil diretamente no Firestore...');
     const displayName = user.displayName || user.email!.split('@')[0];
     const photoURL = additionalData?.photoURL || user.photoURL || undefined;
 
-    const result = await createInitialUserDocumentFunction(
-      user.uid,
-      user.email!,
+    // Criar o documento diretamente no Firestore em vez de usar Cloud Function
+    const userRef = doc(db, 'users', user.uid);
+    const userData = {
+      uid: user.uid,
+      email: user.email!,
       displayName,
-      role,
       photoURL,
-      user
-    );
+      roles: [role],
+      activeRole: role,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      profileComplete: false,
+      missingFields: ['phone', 'cpf', 'gender', 'birthDate'],
+      profileCompleteness: 25,
+      ...additionalData
+    };
 
-    if (!result.success) {
-      throw new Error(result.message || 'Erro ao criar documento do usuário');
-    }
+    console.log('[createUserProfile] Dados do usuário:', userData);
+    await setDoc(userRef, userData);
+    console.log('[createUserProfile] Documento criado com sucesso!');
   } catch (error: any) {
     console.error('[createUserProfile] Erro ao criar documento:', error.message);
     throw error;
