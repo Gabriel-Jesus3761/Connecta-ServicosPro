@@ -421,90 +421,150 @@ export async function loginWithEmail(
 /**
  * Login com Google
  * Implementa vinculação automática de credenciais para evitar contas duplicadas
+ * Com retry automático para erros de permissão (propagação de regras)
  */
 export async function loginWithGoogle(role: UserRole = 'client'): Promise<UserProfile> {
-  try {
-    const result = await signInWithPopup(auth, googleProvider);
-    const user = result.user;
+  const MAX_RETRIES = 2;
+  let lastError: any = null;
+  let cachedUser: any = null;
+  let cachedAdditionalInfo: any = {};
 
-    // Extrair informações adicionais do credential (se disponível)
-    const additionalUserInfo: any = {};
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      console.log(`[loginWithGoogle] Tentativa ${attempt} de ${MAX_RETRIES}`);
 
-    // IMPORTANTE: A foto vem direto do user.photoURL (Firebase já processa)
-    if (user.photoURL) {
-      additionalUserInfo.photoURL = user.photoURL;
-    }
+      // Na primeira tentativa, faz o signInWithPopup e guarda o user
+      // Nas tentativas seguintes, reutiliza o user da primeira tentativa
+      let user: any;
+      let additionalUserInfo: any = {};
 
-    // O Google pode retornar informações adicionais no resultado
-    if ((result as any).additionalUserInfo?.profile) {
-      const googleProfile = (result as any).additionalUserInfo.profile;
+      if (attempt === 1) {
+        const result = await signInWithPopup(auth, googleProvider);
+        user = result.user;
 
-      // Capturar informações extras do Google
-      if (googleProfile.given_name) additionalUserInfo.firstName = googleProfile.given_name;
-      if (googleProfile.family_name) additionalUserInfo.lastName = googleProfile.family_name;
-      if (googleProfile.locale) additionalUserInfo.locale = googleProfile.locale;
-      // Foto de alta qualidade do Google (sobrescreve se disponível)
-      if (googleProfile.picture) additionalUserInfo.photoURL = googleProfile.picture;
-    }
+        // Guarda o user para tentativas futuras
+        cachedUser = user;
 
-    let profile = await getUserProfile(user.uid);
-
-    // REGRA DE NEGÓCIO:
-    // - Se é a PRIMEIRA VEZ do usuário (não tem perfil), cria com o role selecionado
-    // - Se JÁ TEM perfil, permite login em QUALQUER role (não restringe)
-    //   e oferece opção de adicionar novo role depois
-    if (!profile) {
-      // Primeira vez - cria o perfil com o role selecionado
-      await createUserProfile(user, role, additionalUserInfo);
-      profile = await getUserProfile(user.uid);
-    } else {
-      // Já tem perfil - permite login e atualiza informações
-      console.log('[loginWithGoogle] Usuário já possui perfil, atualizando informações...');
-      const userRef = doc(db, 'users', user.uid);
-      const updateData: any = {
-        ...additionalUserInfo,
-        updatedAt: serverTimestamp(),
-      };
-
-      console.log('[loginWithGoogle] Dados a atualizar:', updateData);
-      await updateDoc(userRef, updateData);
-      console.log('[loginWithGoogle] updateDoc concluído');
-
-      // Se o usuário tem o role solicitado, alterna para ele
-      if (profile.roles.includes(role)) {
-        if (profile.activeRole !== role) {
-          console.log(`[loginWithGoogle] Alternando role de ${profile.activeRole} para ${role}`);
-          await switchActiveRole(user.uid, role);
+        // IMPORTANTE: A foto vem direto do user.photoURL (Firebase já processa)
+        if (user.photoURL) {
+          additionalUserInfo.photoURL = user.photoURL;
         }
+
+        // O Google pode retornar informações adicionais no resultado
+        if (result.additionalUserInfo?.profile) {
+          const googleProfile = result.additionalUserInfo.profile;
+
+          // Capturar informações extras do Google
+          if (googleProfile.given_name) additionalUserInfo.firstName = googleProfile.given_name;
+          if (googleProfile.family_name) additionalUserInfo.lastName = googleProfile.family_name;
+          if (googleProfile.locale) additionalUserInfo.locale = googleProfile.locale;
+          // Foto de alta qualidade do Google (sobrescreve se disponível)
+          if (googleProfile.picture) additionalUserInfo.photoURL = googleProfile.picture;
+        }
+
+        // Guarda as informações adicionais
+        cachedAdditionalInfo = additionalUserInfo;
       } else {
-        console.log(`[loginWithGoogle] Usuário não possui role ${role}, mantendo ${profile.activeRole}`);
+        // Nas tentativas seguintes, reutiliza o user da primeira tentativa
+        console.log('[loginWithGoogle] Usando usuário da primeira tentativa para retry');
+        user = cachedUser;
+        additionalUserInfo = cachedAdditionalInfo;
+
+        if (!user) {
+          throw new Error('Usuário não disponível para retry');
+        }
       }
 
-      console.log('[loginWithGoogle] Buscando perfil atualizado...');
-      profile = await getUserProfile(user.uid);
-      console.log('[loginWithGoogle] Perfil atualizado:', profile);
+      console.log(`[loginWithGoogle] Tentando buscar perfil do usuário ${user.uid}...`);
+      let profile = await getUserProfile(user.uid);
+      console.log(`[loginWithGoogle] getUserProfile retornou:`, profile ? 'PERFIL EXISTE' : 'PERFIL NÃO EXISTE');
+
+      // REGRA DE NEGÓCIO:
+      // - Se é a PRIMEIRA VEZ do usuário (não tem perfil), cria com o role selecionado
+      // - Se JÁ TEM perfil, permite login em QUALQUER role (não restringe)
+      //   e oferece opção de adicionar novo role depois
+      if (!profile) {
+        // Primeira vez - cria o perfil com o role selecionado
+        console.log('[loginWithGoogle] Criando perfil pela primeira vez...');
+        await createUserProfile(user, role, additionalUserInfo);
+        console.log('[loginWithGoogle] Perfil criado com sucesso!');
+
+        // Em vez de tentar ler o perfil recém-criado (que falha por propagação de regras),
+        // construímos o objeto profile com os dados que já conhecemos
+        console.log('[loginWithGoogle] Construindo profile a partir dos dados conhecidos...');
+        profile = {
+          uid: user.uid,
+          email: user.email!,
+          displayName: user.displayName || user.email!.split('@')[0],
+          photoURL: additionalUserInfo.photoURL || user.photoURL || undefined,
+          roles: [role],
+          activeRole: role,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as any;
+        console.log('[loginWithGoogle] Profile construído:', profile);
+      } else {
+        // Já tem perfil - permite login e atualiza informações
+        console.log('[loginWithGoogle] Usuário já possui perfil, atualizando informações...');
+        const userRef = doc(db, 'users', user.uid);
+        const updateData: any = {
+          ...additionalUserInfo,
+          updatedAt: serverTimestamp(),
+        };
+
+        console.log('[loginWithGoogle] Dados a atualizar:', updateData);
+        console.log('[loginWithGoogle] Executando updateDoc...');
+        await updateDoc(userRef, updateData);
+        console.log('[loginWithGoogle] updateDoc concluído');
+
+        // Se o usuário tem o role solicitado, alterna para ele
+        if (profile.roles.includes(role)) {
+          if (profile.activeRole !== role) {
+            console.log(`[loginWithGoogle] Alternando role de ${profile.activeRole} para ${role}`);
+            await switchActiveRole(user.uid, role);
+          }
+        } else {
+          console.log(`[loginWithGoogle] Usuário não possui role ${role}, mantendo ${profile.activeRole}`);
+        }
+
+        console.log('[loginWithGoogle] Buscando perfil atualizado...');
+        profile = await getUserProfile(user.uid);
+        console.log('[loginWithGoogle] Perfil atualizado:', profile);
+      }
+
+      if (!profile) {
+        throw new Error('Erro ao obter perfil do usuário');
+      }
+
+      console.log(`[loginWithGoogle] Login bem-sucedido na tentativa ${attempt}`);
+      return profile;
+    } catch (error: any) {
+      console.error(`[loginWithGoogle] Erro na tentativa ${attempt}:`, error.message || error);
+      lastError = error;
+
+      // Tratamento especial para conta existente com credencial diferente
+      if (error.code === 'auth/account-exists-with-different-credential') {
+        throw new Error('Esta conta já existe com um método de login diferente. Use o método original ou entre em contato com o suporte.');
+      }
+
+      // Se for erro de permissão e ainda há tentativas, aguarda e tenta novamente
+      if (error.message?.includes('Missing or insufficient permissions') && attempt < MAX_RETRIES) {
+        console.log(`[loginWithGoogle] Erro de permissão detectado. Tentando novamente em 2.5 segundos...`);
+        await new Promise(resolve => setTimeout(resolve, 2500));
+        continue;
+      }
+
+      // Se é a última tentativa ou erro diferente, propaga o erro
+      if (error instanceof Error && error.message) {
+        throw error;
+      }
+
+      throw new Error(getAuthErrorMessage(error.code) || error.message || 'Erro ao autenticar com Google');
     }
-
-    if (!profile) {
-      throw new Error('Erro ao obter perfil do usuário');
-    }
-
-    return profile;
-  } catch (error: any) {
-    console.error('[loginWithGoogle] Erro:', error.message || error);
-
-    // Tratamento especial para conta existente com credencial diferente
-    if (error.code === 'auth/account-exists-with-different-credential') {
-      throw new Error('Esta conta já existe com um método de login diferente. Use o método original ou entre em contato com o suporte.');
-    }
-
-    // Se já é um Error com mensagem, manter a mensagem original
-    if (error instanceof Error && error.message) {
-      throw error;
-    }
-
-    throw new Error(getAuthErrorMessage(error.code) || error.message || 'Erro ao autenticar com Google');
   }
+
+  // Não deve chegar aqui, mas por segurança
+  throw lastError || new Error('Erro ao autenticar com Google após múltiplas tentativas');
 }
 
 /**

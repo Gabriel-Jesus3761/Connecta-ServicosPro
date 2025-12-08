@@ -120,47 +120,83 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const handleGoogleLogin = async (role: UserRole) => {
+    console.log('🚀 [AuthContext] handleGoogleLogin iniciado. Role solicitado:', role)
     setIsLoading(true)
 
     try {
+      console.log('📝 [AuthContext] Chamando loginWithGoogle...')
       const profile = await loginWithGoogle(role)
+      console.log('✅ [AuthContext] loginWithGoogle retornou:', profile)
+
       const userData = profileToUser(profile)
+      console.log('📊 [AuthContext] userData convertido:', userData)
+
       setUser(userData)
+      console.log('✅ [AuthContext] Estado do usuário atualizado')
 
       // Navegação baseada no role ativo
+      console.log('🧭 [AuthContext] Determinando navegação. activeRole:', profile.activeRole)
+
       if (profile.activeRole === 'owner') {
+        console.log('➡️ [AuthContext] Navegando para /selecionar-empresa')
         navigate('/selecionar-empresa')
       } else if (profile.activeRole === 'professional') {
+        console.log('➡️ [AuthContext] Navegando para /profissional/associar-barbearia')
         navigate('/profissional/associar-barbearia')
       } else {
+        console.log('➡️ [AuthContext] Navegando para / (home)')
         navigate('/')
       }
+
+      console.log('✅ [AuthContext] handleGoogleLogin concluído com sucesso')
     } catch (error: any) {
+      console.error('❌ [AuthContext] Erro no handleGoogleLogin:', error)
+      console.error('❌ [AuthContext] Mensagem do erro:', error.message)
+      console.error('❌ [AuthContext] Stack do erro:', error.stack)
       throw error
     } finally {
+      console.log('🏁 [AuthContext] handleGoogleLogin finalizado. isLoading = false')
       setIsLoading(false)
     }
   }
 
   const handleFacebookLogin = async (role: UserRole) => {
+    console.log('🚀 [AuthContext] handleFacebookLogin iniciado. Role solicitado:', role)
     setIsLoading(true)
 
     try {
+      console.log('📝 [AuthContext] Chamando loginWithFacebook...')
       const profile = await loginWithFacebook(role)
+      console.log('✅ [AuthContext] loginWithFacebook retornou:', profile)
+
       const userData = profileToUser(profile)
+      console.log('📊 [AuthContext] userData convertido:', userData)
+
       setUser(userData)
+      console.log('✅ [AuthContext] Estado do usuário atualizado')
 
       // Navegação baseada no role ativo
+      console.log('🧭 [AuthContext] Determinando navegação. activeRole:', profile.activeRole)
+
       if (profile.activeRole === 'owner') {
+        console.log('➡️ [AuthContext] Navegando para /selecionar-empresa')
         navigate('/selecionar-empresa')
       } else if (profile.activeRole === 'professional') {
+        console.log('➡️ [AuthContext] Navegando para /profissional/associar-barbearia')
         navigate('/profissional/associar-barbearia')
       } else {
+        console.log('➡️ [AuthContext] Navegando para / (home)')
         navigate('/')
       }
+
+      console.log('✅ [AuthContext] handleFacebookLogin concluído com sucesso')
     } catch (error: any) {
+      console.error('❌ [AuthContext] Erro no handleFacebookLogin:', error)
+      console.error('❌ [AuthContext] Mensagem do erro:', error.message)
+      console.error('❌ [AuthContext] Stack do erro:', error.stack)
       throw error
     } finally {
+      console.log('🏁 [AuthContext] handleFacebookLogin finalizado. isLoading = false')
       setIsLoading(false)
     }
   }

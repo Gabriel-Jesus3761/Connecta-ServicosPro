@@ -704,9 +704,14 @@ export function Login() {
             <motion.button
               type="button"
               onClick={async () => {
+                console.log('🔵 [Login.tsx] Botão Google clicado. Role selecionado:', selectedRole);
                 try {
+                  console.log('📞 [Login.tsx] Chamando loginWithGoogle do AuthContext...');
                   await loginWithGoogle(selectedRole);
+                  console.log('✅ [Login.tsx] loginWithGoogle concluído sem erros');
                 } catch (error: any) {
+                  console.error('❌ [Login.tsx] Erro capturado no onClick:', error);
+                  console.error('❌ [Login.tsx] Mensagem:', error.message);
                   setErrors((prev) => ({
                     ...prev,
                     general: error.message || "Erro ao fazer login com Google",
@@ -743,9 +748,14 @@ export function Login() {
             <motion.button
               type="button"
               onClick={async () => {
+                console.log('🔵 [Login.tsx] Botão Facebook clicado. Role selecionado:', selectedRole);
                 try {
+                  console.log('📞 [Login.tsx] Chamando loginWithFacebook do AuthContext...');
                   await loginWithFacebook(selectedRole);
+                  console.log('✅ [Login.tsx] loginWithFacebook concluído sem erros');
                 } catch (error: any) {
+                  console.error('❌ [Login.tsx] Erro capturado no onClick:', error);
+                  console.error('❌ [Login.tsx] Mensagem:', error.message);
                   setErrors((prev) => ({
                     ...prev,
                     general: error.message || "Erro ao fazer login com Facebook",

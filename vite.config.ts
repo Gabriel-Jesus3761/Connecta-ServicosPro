@@ -1,25 +1,28 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import { copyFileSync } from 'fs'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { copyFileSync } from "fs";
 
 export default defineConfig({
   plugins: [
     react(),
     {
-      name: 'copy-nojekyll',
+      name: "copy-nojekyll",
       closeBundle() {
-        copyFileSync('.nojekyll', 'dist/.nojekyll')
-      }
-    }
+        // isso aqui é só pra GitHub Pages, mas não atrapalha o Firebase
+        copyFileSync(".nojekyll", "dist/.nojekyll");
+      },
+    },
   ],
-  base: '/Connecta-ServicosPro/',
+  // ❌ REMOVA essa linha:
+  // base: '/Connecta-ServicosPro/',
+  // ✅ deixe sem base (Vite usa '/')
   resolve: {
     alias: {
-      '@': '/src',
+      "@": "/src",
     },
   },
   build: {
-    outDir: 'dist',
-    assetsDir: 'assets',
+    outDir: "dist",
+    assetsDir: "assets",
   },
-})
+});

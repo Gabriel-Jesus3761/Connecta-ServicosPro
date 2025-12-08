@@ -34,11 +34,13 @@ function App() {
     <Router>
       <AuthProvider>
         <Routes>
+          {/* Rotas de Autenticação (SEM header) */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+
           {/* Rotas Públicas com AppLayout (header global) */}
           <Route element={<AppLayout />}>
             <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
             <Route path="/perfil" element={<Perfil />} />
             <Route path="/categorias/:categoryId" element={<EmpresasPorCategoria />} />
             <Route path="/empresas/:businessId" element={<EmpresaDetalhes />} />

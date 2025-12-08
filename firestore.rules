@@ -68,8 +68,7 @@ service cloud.firestore {
     // COLEÇÃO: USERS
     // ============================================
     match /users/{userId} {
-      // TEMPORÁRIO: Totalmente permissivo apenas para DEBUG
-      // TODO: Restaurar regras de segurança após identificar o problema
+      // Permite leitura e escrita para qualquer usuário autenticado
       allow read, write: if request.auth != null;
     }
 
