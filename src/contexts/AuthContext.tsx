@@ -31,6 +31,11 @@ export interface User {
   profileComplete?: boolean
   missingFields?: string[]
   profileCompleteness?: number
+  // Aliases para compatibilidade com UserProfile
+  uid: string // Alias para id
+  displayName: string // Alias para name
+  createdAt?: any
+  updatedAt?: any
 }
 
 interface AuthContextType {
@@ -65,6 +70,11 @@ function profileToUser(profile: UserProfile): User {
     profileComplete: profile.profileComplete,
     missingFields: profile.missingFields,
     profileCompleteness: profile.profileCompleteness,
+    // Aliases para compatibilidade
+    uid: profile.uid,
+    displayName: profile.displayName,
+    createdAt: profile.createdAt,
+    updatedAt: profile.updatedAt,
   }
 }
 
