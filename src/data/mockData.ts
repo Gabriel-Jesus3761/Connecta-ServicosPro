@@ -4,57 +4,89 @@ import { Appointment, Service, Professional, DashboardStats, PaymentMethod, Expe
 const generateAppointments = (): Appointment[] => {
   const today = new Date()
 
-  // Apenas 3 agendamentos de exemplo, um de cada status principal
-  return [
-    {
-      id: '1',
-      businessId: 'biz-1',
-      clientId: '1',
-      clientName: 'Ana Paula Silva',
-      serviceId: '1',
-      service: 'Corte Masculino',
-      professionalId: '1',
-      professional: 'João Santos',
-      date: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 14, 0),
-      time: '14:00',
-      price: 35,
-      status: 'confirmed',
-      duration: 30,
-      paymentMethod: undefined,
-    },
-    {
-      id: '2',
-      businessId: 'biz-1',
-      clientId: '2',
-      clientName: 'Lucas Ferreira',
-      serviceId: '3',
-      service: 'Corte + Barba',
-      professionalId: '2',
-      professional: 'Mariana Costa',
-      date: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 15, 30),
-      time: '15:30',
-      price: 55,
-      status: 'pending',
-      duration: 45,
-      paymentMethod: undefined,
-    },
-    {
-      id: '3',
-      businessId: 'biz-1',
-      clientId: '3',
-      clientName: 'Pedro Alves',
-      serviceId: '2',
-      service: 'Barba Completa',
-      professionalId: '1',
-      professional: 'João Santos',
-      date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1, 10, 0),
-      time: '10:00',
-      price: 25,
-      status: 'completed',
-      duration: 20,
-      paymentMethod: 'pix',
-    },
+  const services = [
+    { id: '1', name: 'Corte Masculino', price: 35, duration: 30 },
+    { id: '2', name: 'Barba Completa', price: 25, duration: 20 },
+    { id: '3', name: 'Corte + Barba', price: 55, duration: 45 },
+    { id: '4', name: 'Design de Sobrancelha', price: 15, duration: 15 },
+    { id: '5', name: 'Hidratação', price: 40, duration: 30 },
   ]
+
+  const clients = [
+    'Ana Paula Silva', 'Lucas Ferreira', 'Pedro Alves', 'Carlos Santos',
+    'Maria Oliveira', 'João Silva', 'Roberto Costa', 'Fernanda Lima',
+    'Marcos Souza', 'Juliana Martins', 'Paulo Rocha', 'Beatriz Cardoso',
+    'Ricardo Mendes', 'Amanda Ribeiro', 'Felipe Nunes'
+  ]
+
+  const professionals = ['João Santos', 'Mariana Costa', 'Carlos Silva']
+  const statuses: Array<'pending' | 'confirmed' | 'completed' | 'cancelled'> = ['pending', 'confirmed', 'completed', 'cancelled']
+
+  const appointments: Appointment[] = []
+  let id = 1
+
+  // Gerar agendamentos para hoje
+  const todayAppointments = [
+    { time: '08:00', hour: 8, minute: 0 },
+    { time: '09:00', hour: 9, minute: 0 },
+    { time: '09:30', hour: 9, minute: 30 },
+    { time: '10:30', hour: 10, minute: 30 },
+    { time: '11:00', hour: 11, minute: 0 },
+    { time: '12:00', hour: 12, minute: 0 },
+    { time: '13:30', hour: 13, minute: 30 },
+    { time: '14:00', hour: 14, minute: 0 },
+    { time: '14:30', hour: 14, minute: 30 },
+    { time: '15:00', hour: 15, minute: 0 },
+    { time: '15:30', hour: 15, minute: 30 },
+    { time: '16:30', hour: 16, minute: 30 },
+    { time: '17:00', hour: 17, minute: 0 },
+    { time: '18:00', hour: 18, minute: 0 },
+    { time: '19:00', hour: 19, minute: 0 },
+  ]
+
+  todayAppointments.forEach((timeSlot, index) => {
+    const service = services[index % services.length]
+    const client = clients[index % clients.length]
+    const professional = professionals[index % professionals.length]
+    const status = statuses[index % statuses.length]
+
+    appointments.push({
+      id: String(id++),
+      businessId: 'biz-1',
+      clientId: String(index + 1),
+      clientName: client,
+      serviceId: service.id,
+      service: service.name,
+      professionalId: String((index % professionals.length) + 1),
+      professional: professional,
+      date: new Date(today.getFullYear(), today.getMonth(), today.getDate(), timeSlot.hour, timeSlot.minute),
+      time: timeSlot.time,
+      price: service.price,
+      status: status,
+      duration: service.duration,
+      paymentMethod: status === 'completed' ? 'pix' : undefined,
+    })
+  })
+
+  // Adicionar alguns agendamentos de ontem (concluídos)
+  appointments.push({
+    id: String(id++),
+    businessId: 'biz-1',
+    clientId: '100',
+    clientName: 'Cliente Ontem',
+    serviceId: '2',
+    service: 'Barba Completa',
+    professionalId: '1',
+    professional: 'João Santos',
+    date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1, 10, 0),
+    time: '10:00',
+    price: 25,
+    status: 'completed',
+    duration: 20,
+    paymentMethod: 'pix',
+  })
+
+  return appointments
 }
 
 export const mockAppointments: Appointment[] = generateAppointments()
